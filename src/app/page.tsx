@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Selector from "@/components/selector";
+import EventsDate from "@/components/date";
 
 interface FormData {
   firstName: string;
@@ -19,12 +15,13 @@ interface FormData {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    plusOne: "",
+    plusOne: "1",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
@@ -52,6 +49,7 @@ export default function Home() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    console.log("Form data:", formData);
 
     try {
       const response = await fetch(
@@ -79,8 +77,13 @@ export default function Home() {
         lastName: "",
         email: "",
         phone: "",
-        plusOne: "",
+        plusOne: "1",
       });
+      
+      // Redirect to confirmation page after a short delay
+      setTimeout(() => {
+        router.push("/confirmation");
+      }, 1000);
     } catch (error) {
       console.error("Error submitting form:", error);
       setSubmitStatus("error");
@@ -98,29 +101,57 @@ export default function Home() {
         </div>
 
         {/* Main Heading */}
-        {submitStatus === "idle" || submitStatus === "error" ? (
-          <>
-            <div className="text-center max-w-3xs mx-auto">
-              <h1
-                className="text-3xl text-white"
-                style={{
-                  textAlign: "center",
-                  fontFamily: "RH Serif",
-                  fontSize: "29px",
-                  fontStyle: "normal",
-                  fontWeight: "300",
-                  lineHeight: "32px",
-                  textTransform: "uppercase",
-                }}
-              >
-                PLEASE CONFIRM YOUR RSVP
-              </h1>
-            </div>
+        <div className="text-center max-w-[577px] mx-auto flex flex-col gap-4 items-center justify-center">
+          <h1
+            className="text-3xl text-white"
+            style={{
+              textAlign: "center",
+              fontFamily: "RH Serif",
+              fontSize: "29px",
+              fontStyle: "normal",
+              fontWeight: "300",
+              lineHeight: "32px",
+              textTransform: "uppercase",
+            }}
+          >
+            THE GALLERY ON THE CHAMPS-ÉLYSÉES
+          </h1>
+          <h2
+            className="text-3xl text-white"
+            style={{
+              textAlign: "center",
+              fontFamily: "RH Serif",
+              fontSize: "20px",
+              fontStyle: "normal",
+              fontWeight: "300",
+              lineHeight: "32px",
+              textTransform: "uppercase",
+            }}
+          >
+            CELEBRATION OF ARCHITECTURE, DESIGN, FOOD & WINE
+          </h2>
+          <EventsDate />
+          <h3
+            className="text-3xl text-white"
+            style={{
+              textAlign: "center",
+              fontFamily: "RH Serif",
+              fontSize: "15px",
+              fontStyle: "normal",
+              fontWeight: "300",
+              lineHeight: "20px",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}
+          >
+            23 Avenue des Champs-élysées
+          </h3>
+        </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6 flex flex-col gap-20"
-            >
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 flex flex-col gap-20"
+        >
               <div className="flex flex-col gap-8 mb-0">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
                   <div>
@@ -149,7 +180,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Email and Phone Fields */}
+                {/* Email and Attendees Fields */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 mb-0">
                   <div>
                     <input
@@ -166,18 +197,11 @@ export default function Home() {
 
                   <div className="flex flex-col gap-4 relative">
                     <div className="w-full">
-                      <Select onValueChange={handleSelectChange} required>
-                        <SelectTrigger className="w-full px-3 py-2 !h-12 text-md bg-black border border-white text-white rounded-none focus:outline-none focus:border-white appearance-none font-rh-sans font-light">
-                          <SelectValue
-                            className="text-white font-rh-sans text-lg"
-                            placeholder="Number of Guests"
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-black border border-white text-white rounded-none">
-                          <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="2">2 (you and a guest)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Selector 
+                        value={formData.plusOne} 
+                        onChange={handleSelectChange} 
+                        required 
+                      />
                     </div>
                   </div>
                 </div>
@@ -202,35 +226,7 @@ export default function Home() {
                 </button>
               </div>
             </form>
-          </>
-        ) : (
-          <>
-            <div className="flex flex-col gap-8 mb-0">
-              <div className="bg-transparent max-w-[732px] mx-auto">
-                <p
-                  className="text-sm font-medium text-white font-rh-sans"
-                  style={{
-                    textAlign: "center",
-                    fontFamily: "RH Serif",
-                    fontSize: "29px",
-                    fontStyle: "normal",
-                    fontWeight: "300",
-                    lineHeight: "36px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  thank you for confirming your attendance.
-                  <br />
-                  <br />
-                  we look forward to welcoming you
-                  <br />
-                  forthe unveiling of rh paris.
-                </p>
-              </div>
-            </div>
-          </>
-        )}
-      </main>
-    </div>
-  );
-}
+          </main>
+        </div>
+      );
+    }
