@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Selector from "../selector";
 import { Input } from "../ui/input";
@@ -15,26 +14,9 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { FormData, FormSchema, FORM_FIELDS } from "./schema";
 
 const GOOGLE_FORM_URL = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL as string;
-
-const FormSchema = z.object({
-  firstName: z.string().min(1, {
-    message: "First name is required.",
-  }),
-  lastName: z.string().min(1, {
-    message: "Last name is required.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  phone: z.string().optional(),
-  plusOne: z.string().min(1, {
-    message: "Please select number of attendees.",
-  }),
-});
-
-type FormData = z.infer<typeof FormSchema>;
 
 const CustomInput = React.forwardRef<
   HTMLInputElement,
@@ -62,41 +44,7 @@ const CustomInput = React.forwardRef<
 });
 CustomInput.displayName = "CustomInput";
 
-const FORM_FIELDS: {
-  name: keyof FormData;
-  label: string;
-  required: boolean;
-  type: string;
-  placeholder?: string;
-}[] = [
-  {
-    name: "firstName",
-    label: "First Name",
-    required: true,
-    type: "text",
-    placeholder: "First Name*",
-  },
-  {
-    name: "lastName",
-    label: "Last Name",
-    required: true,
-    type: "text",
-    placeholder: "Last Name*",
-  },
-  {
-    name: "email",
-    label: "Email",
-    required: true,
-    type: "email",
-    placeholder: "Email*",
-  },
-  {
-    name: "plusOne",
-    label: "Number of Guests",
-    required: true,
-    type: "selector",
-  },
-];
+
 
 export default function SubmissionForm() {
   const router = useRouter();

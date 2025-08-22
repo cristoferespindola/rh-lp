@@ -6,10 +6,13 @@ A modern and responsive landing page built with Next.js and Tailwind CSS for eve
 
 - **Dark Design**: Professional dark theme inspired by RH.com
 - **Responsive**: Works perfectly on desktop, tablet and mobile
-- **Intuitive Form**: Organized fields with real-time validation
+- **Advanced Form Validation**: Zod schema validation with React Hook Form
+- **Custom Font System**: RH Sans, RH Serif, and Helvetica fonts
 - **Google Sheets Integration**: Sends data directly to a Google spreadsheet
-- **Visual Feedback**: Success and error messages for better UX
+- **Visual Feedback**: Toast notifications for better UX
 - **Loading States**: Visual indicators during submission
+- **Confirmation Page**: Dedicated thank you page after successful submission
+- **Code Quality**: Prettier formatting and TypeScript for better development
 
 ## 📋 Form Fields
 
@@ -18,15 +21,19 @@ The form collects the following data:
 - **First Name**: Participant's first name (required)
 - **Last Name**: Participant's last name (required)
 - **Email**: Email address (required)
-- **Are you bringing a plus one**: Checkbox for plus one (Yes/No)
+- **Number of Guests**: Radio button selection (1 or 2 guests)
 - **Date**: **Automatic** (current date when submitted)
 
 ## 🛠️ Technologies Used
 
-- **Next.js 14**: React framework with App Router
+- **Next.js 15**: React framework with App Router
 - **TypeScript**: Static typing for better development
 - **Tailwind CSS**: Utility CSS framework
+- **React Hook Form**: Form state management and validation
+- **Zod**: Schema validation
+- **Sonner**: Toast notifications
 - **Google Apps Script**: To process data and save to spreadsheet
+- **Prettier**: Code formatting
 
 ## 📦 Installation and Setup
 
@@ -34,7 +41,7 @@ The form collects the following data:
 
 ```bash
 git clone <your-repository>
-cd carlos
+cd rh-lp
 ```
 
 2. **Install dependencies**:
@@ -43,13 +50,21 @@ cd carlos
 npm install
 ```
 
-3. **Run in development mode**:
+3. **Set up environment variables**:
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_GOOGLE_FORM_URL=your_google_apps_script_web_app_url
+```
+
+4. **Run in development mode**:
 
 ```bash
 npm run dev
 ```
 
-4. **Access the application**:
+5. **Access the application**:
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🔧 Google Apps Script Configuration
@@ -73,7 +88,8 @@ function doPost(e) {
         "First Name",
         "Last Name",
         "Email",
-        "Are you bringing a plus one",
+        "Phone",
+        "Number of Guests",
         "Date",
         "Timestamp",
       ]);
@@ -84,9 +100,10 @@ function doPost(e) {
       data["First Name"] || "",
       data["Last Name"] || "",
       data["Email"] || "",
-      data["Are you bringing a plus one"] || "No", // Will be "Yes" or "No"
-      data["Date"] || new Date().toISOString().split("T")[0], // Current date if not provided
-      new Date().toISOString(), // Add timestamp
+      data["Phone"] || "",
+      data["Number of Guests"] || "1",
+      data["Date"] || new Date().toISOString().split("T")[0],
+      new Date().toISOString(),
     ];
 
     // Append the data to the sheet
@@ -133,7 +150,52 @@ function doGet(e) {
 5. Click "Deploy" > "New deployment"
 6. Choose "Web app" as type
 7. Configure necessary permissions
-8. Copy the generated URL and update it in the application code
+8. Copy the generated URL and update it in your `.env.local` file
+
+## 🎨 Custom Font System
+
+The project includes a comprehensive custom font system:
+
+### Available Fonts:
+- **RH Sans**: Multiple weights (Hairline, UltraThin, Thin, ExtraLight, Light, Roman)
+- **RH Serif**: Various weights and styles
+- **RHC**: Condensed variant
+- **Helvetica**: For placeholder text
+
+### Usage:
+```css
+/* In CSS */
+font-family: var(--font-rh-sans);
+font-family: var(--font-rh-serif);
+font-family: var(--font-rhc);
+font-family: var(--font-helvetica);
+
+/* In Tailwind */
+font-rh-sans
+font-rh-serif
+font-rhc
+font-helvetica
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── confirmation/     # Thank you page
+│   ├── globals.css      # Global styles
+│   ├── layout.tsx       # Root layout
+│   └── page.tsx         # Main landing page
+├── components/
+│   ├── selector/        # Custom radio button component
+│   ├── submissionForm/  # Main form component
+│   ├── svg/            # SVG components
+│   └── ui/             # shadcn/ui components
+├── lib/
+│   └── utils.ts        # Utility functions
+└── styles/
+    └── fonts.css       # Font definitions
+```
 
 ## 🌐 Deployment
 
@@ -165,30 +227,26 @@ The landing page is fully responsive and adapts to different screen sizes:
 
 ### Colors and Style
 
-Colors can be easily customized by editing the Tailwind classes in the `src/app/page.tsx` file:
+Colors can be easily customized by editing the Tailwind classes:
 
 - **Main background**: `bg-black`
-- **Form card**: `bg-gray-900`
-- **Input fields**: `bg-gray-800`
-- **Blue accent**: `text-blue-400`, `bg-blue-600`
-- **Success colors**: `green-900`, `green-400`, `green-300`
-- **Error colors**: `red-900`, `red-400`, `red-300`
+- **Form fields**: `bg-black border-white`
+- **Submit button**: `bg-white text-black`
+- **Success colors**: Toast notifications
+- **Error colors**: Form validation messages
 
-### Texts
+### Fonts
 
-All texts can be edited directly in the main component:
+Custom fonts are defined in `src/styles/fonts.css` and can be easily modified or extended.
 
-- Page title
-- Event description
-- Field labels
-- Feedback messages
+## 🔒 Security & Validation
 
-## 🔒 Security
-
-- Required field validation
-- Frontend data sanitization
-- HTTPS for data transmission
-- Proper error handling
+- **Zod Schema Validation**: Type-safe form validation
+- **React Hook Form**: Efficient form state management
+- **Required field validation**: Client-side validation
+- **Frontend data sanitization**: Input cleaning
+- **HTTPS for data transmission**: Secure data transfer
+- **Proper error handling**: Comprehensive error management
 
 ## 📊 Monitoring
 
@@ -197,21 +255,50 @@ To monitor submissions, you can:
 1. Check the Google Sheets spreadsheet
 2. Add logs in Google Apps Script
 3. Implement analytics (Google Analytics, etc.)
+4. Monitor toast notifications in the UI
 
-## 🚀 Recent Updates (v2.1)
+## 🚀 Recent Updates (v3.0)
 
-### Form Simplification:
+### Form System Overhaul:
 
-- ✅ **Automatic Date**: Removed manual date field, now uses current date automatically
-- ✅ **Plus One Checkbox**: Replaced select with more intuitive checkbox
-- ✅ **English Texts**: All texts translated to English
-- ✅ **Better UX**: Simpler and more direct form
+- ✅ **Zod Validation**: Type-safe schema validation
+- ✅ **React Hook Form**: Professional form state management
+- ✅ **Toast Notifications**: Better user feedback with Sonner
+- ✅ **Custom Radio Buttons**: Replaced dropdown with styled radio buttons
+- ✅ **Form Components**: shadcn/ui Form components for better structure
 
-### Technical Improvements:
+### Design Improvements:
 
-- **Boolean Type**: PlusOne field is now boolean instead of string
-- **Simplified Validation**: Fewer validations needed
-- **Enhanced UX**: More direct and easier to use form
+- ✅ **Custom Font System**: RH Sans, RH Serif, RHC, and Helvetica
+- ✅ **Autocomplete Styling**: Fixed yellow background in browsers
+- ✅ **Placeholder Styling**: Custom Helvetica font for placeholders
+- ✅ **Confirmation Page**: Dedicated thank you page
+
+### Code Quality:
+
+- ✅ **Prettier**: Automatic code formatting
+- ✅ **TypeScript**: Improved type safety
+- ✅ **Component Structure**: Better organization
+- ✅ **Error Handling**: Comprehensive error management
+
+## 🛠️ Development Scripts
+
+```bash
+# Development
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+
+# Code Quality
+npm run lint         # Run ESLint
+npm run format       # Format code with Prettier
+npm run format:check # Check code formatting
+
+# Deployment
+npm run export       # Export static files
+npm run deploy:vercel    # Deploy to Vercel
+npm run deploy:netlify   # Deploy to Netlify
+```
 
 ## 🤝 Contributing
 
@@ -243,17 +330,22 @@ For questions or issues:
 **Solution**:
 
 1. Check if the spreadsheet has a sheet named "RH-LP"
-2. Run the `testSheetConnection()` function in Google Apps Script
-3. Check the logs in Google Apps Script
+2. Verify the Google Apps Script URL in `.env.local`
+3. Check the browser console for errors
+4. Check the logs in Google Apps Script
+
+### Problem: Form validation errors
+
+**Solution**: The form uses Zod validation. Check the console for specific validation error messages.
+
+### Problem: Fonts not loading
+
+**Solution**: Ensure all font files are present in `src/fonts/` directory and properly referenced in `src/styles/fonts.css`.
 
 ### Problem: CORS error
 
-**Solution**: The code is already configured with `mode: 'no-cors'` to avoid CORS issues
-
-### Problem: Checkbox doesn't work
-
-**Solution**: The checkbox is configured correctly. Check if JavaScript is enabled in the browser.
+**Solution**: The code is configured with `mode: 'no-cors'` to avoid CORS issues.
 
 ---
 
-Developed with ❤️ using Next.js and Tailwind CSS
+Developed with ❤️ using Next.js, TypeScript, and Tailwind CSS
