@@ -7,10 +7,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+
 export const metadata: Metadata = {
-  title: "RH Event Registration - Join Our Special Event",
-  description: "Register for our exclusive RH event. Fill out the form to confirm your attendance.",
-  keywords: "RH, event, registration, form, attendance, exclusive",
+  title: "RH PARIS",
+  description: "RH Paris - The Gallery on the Champs Élysées"
 };
 
 export default function RootLayout({
