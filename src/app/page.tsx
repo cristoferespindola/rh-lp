@@ -123,7 +123,7 @@ export default function Home() {
               fontSize: "15px",
               fontStyle: "normal",
               fontWeight: "300",
-              lineHeight: "32px",
+              lineHeight: "20px",
               letterSpacing: "2.7px",
               textTransform: "uppercase",
             }}
