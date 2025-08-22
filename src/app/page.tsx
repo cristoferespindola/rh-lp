@@ -96,7 +96,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-10 lg:gap-12">
         <div className="flex flex-col md:max-w-[80%] lg:max-w-none mx-auto">
-          <div className="flex justify-center">
+          <div className="flex justify-center px-9">
             <MainLogo />
           </div>
 
