@@ -14,6 +14,7 @@ A modern and responsive landing page built with Next.js and Tailwind CSS for eve
 ## 📋 Form Fields
 
 The form collects the following data:
+
 - **First Name**: Participant's first name (required)
 - **Last Name**: Participant's last name (required)
 - **Email**: Email address (required)
@@ -30,23 +31,26 @@ The form collects the following data:
 ## 📦 Installation and Setup
 
 1. **Clone the repository**:
+
 ```bash
 git clone <your-repository>
 cd carlos
 ```
 
 2. **Install dependencies**:
+
 ```bash
 npm install
 ```
 
 3. **Run in development mode**:
+
 ```bash
 npm run dev
 ```
 
 4. **Access the application**:
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🔧 Google Apps Script Configuration
 
@@ -57,67 +61,66 @@ function doPost(e) {
   try {
     // Parse the JSON data from the request
     const data = JSON.parse(e.postData.contents);
-    
+
     // Get the active spreadsheet and the specific sheet
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = spreadsheet.getSheetByName("RH-LP");
-    
+
     // If sheet doesn't exist, create it with headers
     if (!sheet) {
       const newSheet = spreadsheet.insertSheet("RH-LP");
       newSheet.appendRow([
         "First Name",
-        "Last Name", 
+        "Last Name",
         "Email",
         "Are you bringing a plus one",
         "Date",
-        "Timestamp"
+        "Timestamp",
       ]);
     }
-    
+
     // Prepare the row data
     const rowData = [
       data["First Name"] || "",
-      data["Last Name"] || "", 
+      data["Last Name"] || "",
       data["Email"] || "",
       data["Are you bringing a plus one"] || "No", // Will be "Yes" or "No"
-      data["Date"] || new Date().toISOString().split('T')[0], // Current date if not provided
-      new Date().toISOString() // Add timestamp
+      data["Date"] || new Date().toISOString().split("T")[0], // Current date if not provided
+      new Date().toISOString(), // Add timestamp
     ];
-    
+
     // Append the data to the sheet
     const targetSheet = sheet || spreadsheet.getSheetByName("RH-LP");
     targetSheet.appendRow(rowData);
-    
+
     // Return success response
-    return ContentService
-      .createTextOutput(JSON.stringify({ 
-        "result": "success",
-        "message": "Data saved successfully",
-        "timestamp": new Date().toISOString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch(error) {
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        result: "success",
+        message: "Data saved successfully",
+        timestamp: new Date().toISOString(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
     // Return error response
-    return ContentService
-      .createTextOutput(JSON.stringify({ 
-        "result": "error", 
-        "error": error.toString(),
-        "timestamp": new Date().toISOString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        result: "error",
+        error: error.toString(),
+        timestamp: new Date().toISOString(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 function doGet(e) {
-  return ContentService
-    .createTextOutput(JSON.stringify({
-      "status": "Form submission endpoint is working!",
-      "timestamp": new Date().toISOString(),
-      "instructions": "Use POST method to submit form data"
-    }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(
+    JSON.stringify({
+      status: "Form submission endpoint is working!",
+      timestamp: new Date().toISOString(),
+      instructions: "Use POST method to submit form data",
+    })
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 ```
 
@@ -135,13 +138,16 @@ function doGet(e) {
 ## 🌐 Deployment
 
 ### Vercel (Recommended)
+
 ```bash
 npm run build
 vercel --prod
 ```
 
 ### Other platforms
+
 The application can be deployed on any platform that supports Next.js:
+
 - Netlify
 - Railway
 - DigitalOcean App Platform
@@ -150,6 +156,7 @@ The application can be deployed on any platform that supports Next.js:
 ## 📱 Responsiveness
 
 The landing page is fully responsive and adapts to different screen sizes:
+
 - **Desktop**: Two-column layout for name fields
 - **Tablet**: Optimized layout for medium screens
 - **Mobile**: Single-column layout for better usability
@@ -157,6 +164,7 @@ The landing page is fully responsive and adapts to different screen sizes:
 ## 🎨 Customization
 
 ### Colors and Style
+
 Colors can be easily customized by editing the Tailwind classes in the `src/app/page.tsx` file:
 
 - **Main background**: `bg-black`
@@ -167,7 +175,9 @@ Colors can be easily customized by editing the Tailwind classes in the `src/app/
 - **Error colors**: `red-900`, `red-400`, `red-300`
 
 ### Texts
+
 All texts can be edited directly in the main component:
+
 - Page title
 - Event description
 - Field labels
@@ -183,6 +193,7 @@ All texts can be edited directly in the main component:
 ## 📊 Monitoring
 
 To monitor submissions, you can:
+
 1. Check the Google Sheets spreadsheet
 2. Add logs in Google Apps Script
 3. Implement analytics (Google Analytics, etc.)
@@ -190,12 +201,14 @@ To monitor submissions, you can:
 ## 🚀 Recent Updates (v2.1)
 
 ### Form Simplification:
+
 - ✅ **Automatic Date**: Removed manual date field, now uses current date automatically
 - ✅ **Plus One Checkbox**: Replaced select with more intuitive checkbox
 - ✅ **English Texts**: All texts translated to English
 - ✅ **Better UX**: Simpler and more direct form
 
 ### Technical Improvements:
+
 - **Boolean Type**: PlusOne field is now boolean instead of string
 - **Simplified Validation**: Fewer validations needed
 - **Enhanced UX**: More direct and easier to use form
@@ -215,24 +228,30 @@ This project is under the MIT license. See the `LICENSE` file for more details.
 ## 📞 Support
 
 For questions or issues:
+
 - Open an issue on GitHub
 - Contact via email
 
 ## 🔧 Troubleshooting
 
 ### Problem: "Script function not found: doGet"
+
 **Solution**: Make sure the Google Apps Script has the `doPost` and `doGet` functions
 
 ### Problem: Data doesn't appear in spreadsheet
-**Solution**: 
+
+**Solution**:
+
 1. Check if the spreadsheet has a sheet named "RH-LP"
 2. Run the `testSheetConnection()` function in Google Apps Script
 3. Check the logs in Google Apps Script
 
 ### Problem: CORS error
+
 **Solution**: The code is already configured with `mode: 'no-cors'` to avoid CORS issues
 
 ### Problem: Checkbox doesn't work
+
 **Solution**: The checkbox is configured correctly. Check if JavaScript is enabled in the browser.
 
 ---

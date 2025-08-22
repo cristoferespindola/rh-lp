@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "export": "next build && next export",
     "deploy:vercel": "vercel --prod",
     "deploy:netlify": "npm run build && netlify deploy --prod --dir=out"
@@ -36,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^8",
     "eslint-config-next": "15.2.4",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4.0.0",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"

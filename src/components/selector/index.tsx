@@ -1,14 +1,16 @@
 "use client";
 
-
-
 interface SelectorProps {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
 }
 
-export default function Selector({ value, onChange, required = false }: SelectorProps) {
+export default function Selector({
+  value,
+  onChange,
+  required = false,
+}: SelectorProps) {
   const options = [
     { value: "1", label: "1" },
     { value: "2", label: "2" },
@@ -20,7 +22,7 @@ export default function Selector({ value, onChange, required = false }: Selector
         Attendees
       </label>
       <div className="flex gap-4 col-span-2 w-full">
-        {options.map((option) => (
+        {options.map(option => (
           <button
             key={option.value}
             type="button"
@@ -32,9 +34,10 @@ export default function Selector({ value, onChange, required = false }: Selector
               transition-all duration-200
               focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50,
               'text-white hover:bg-[#333333]',
-              ${value !== option.value 
-                ? 'bg-transparent hover:bg-[#333333]' 
-                : 'bg-[#242424] hover:bg-[#333333]'
+              ${
+                value !== option.value
+                  ? "bg-transparent hover:bg-[#333333]"
+                  : "bg-[#242424] hover:bg-[#333333]"
               }
             `}
           >
@@ -43,7 +46,9 @@ export default function Selector({ value, onChange, required = false }: Selector
         ))}
       </div>
       {required && !value && (
-        <p className="text-red-400 text-xs mt-1">Please select number of attendees</p>
+        <p className="text-red-400 text-xs mt-1">
+          Please select number of attendees
+        </p>
       )}
     </div>
   );

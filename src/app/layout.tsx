@@ -8,10 +8,9 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-
 export const metadata: Metadata = {
   title: "RH PARIS",
-  description: "RH Paris - The Gallery on the Champs Élysées"
+  description: "RH Paris - The Gallery on the Champs Élysées",
 };
 
 export default function RootLayout({

@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -50,11 +49,11 @@ const CustomInput = React.forwardRef<
       placeholder={placeholder}
       className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-helvetica font-light"
       style={{
-        fontSize: '13px',
-        fontStyle: 'normal',
-        fontWeight: '300',
-        lineHeight: '17.25px',
-        letterSpacing: '0.4px',
+        fontSize: "13px",
+        fontStyle: "normal",
+        fontWeight: "300",
+        lineHeight: "17.25px",
+        letterSpacing: "0.4px",
         ...style,
       }}
       {...props}
@@ -137,9 +136,9 @@ export default function SubmissionForm() {
       });
 
       toast.success("RSVP submitted successfully!");
-            
+
       form.reset();
-      
+
       setTimeout(() => {
         router.push("/confirmation");
       }, 1000);
@@ -159,7 +158,7 @@ export default function SubmissionForm() {
       >
         <div className="flex flex-col gap-4 mb-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {FORM_FIELDS.map((fieldConfig) => (
+            {FORM_FIELDS.map(fieldConfig => (
               <FormField
                 key={fieldConfig.name}
                 control={form.control}
@@ -167,7 +166,8 @@ export default function SubmissionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      {fieldConfig.type === "text" || fieldConfig.type === "email" ? (
+                      {fieldConfig.type === "text" ||
+                      fieldConfig.type === "email" ? (
                         <CustomInput
                           type={fieldConfig.type}
                           placeholder={fieldConfig.placeholder}
@@ -188,7 +188,7 @@ export default function SubmissionForm() {
             ))}
           </div>
         </div>
-        
+
         <div className="flex flex-col justify-center relative">
           <button
             type="submit"

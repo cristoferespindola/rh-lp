@@ -1,4 +1,12 @@
-export default function Logo({ className, width = 278, height = 225 }: { className?: string, width?: number, height?: number }) {
+export default function Logo({
+  className,
+  width = 278,
+  height = 225,
+}: {
+  className?: string;
+  width?: number;
+  height?: number;
+}) {
   return (
     <a
       id="container-rhr-header_logo-rhr"
