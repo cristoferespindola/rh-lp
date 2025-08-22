@@ -93,7 +93,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <main className="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-10 lg:gap-20">
+      <main className="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-10 lg:gap-12">
         {/* Logo */}
         <div className="flex justify-center">
           <Logo />
@@ -152,7 +152,7 @@ export default function Home() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 flex flex-col gap-20"
+          className="space-y-6 flex flex-col gap-12"
         >
               <div className="flex flex-col gap-8 mb-0">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
