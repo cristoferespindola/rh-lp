@@ -1,6 +1,6 @@
 "use client";
 
-import Logo from "@/components/logo";
+import Logo from "@/components/svg/Logo";
 
 export default function Confirmation() {
       return (

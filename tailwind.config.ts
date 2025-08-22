@@ -12,6 +12,7 @@ const config: Config = {
         'rh-sans': ['RH Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         'rh-serif': ['RH Serif', 'Georgia', 'Times New Roman', 'serif'],
         'rhc': ['RHC', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        'helvetica': ['Helvetica', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       fontWeight: {
         'ultra-hairline': '100',

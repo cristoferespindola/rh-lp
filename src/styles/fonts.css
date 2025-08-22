@@ -235,6 +235,64 @@
   font-display: swap;
 }
 
+/* Helvetica Font Family */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/Helvetica.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/Helvetica-Oblique.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/Helvetica-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/Helvetica-BoldOblique.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/helvetica-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/helvetica-compressed.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: condensed;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('../fonts/Helvetica/helvetica-rounded-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'RHC';
   src: url('../fonts/RHC/RHC_WOFF2/RHC-UltraHairlineItalic.woff2') format('woff2');
@@ -312,6 +370,7 @@
   --font-rh-sans: 'RH Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-rh-serif: 'RH Serif', Georgia, 'Times New Roman', serif;
   --font-rhc: 'RHC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-helvetica: 'Helvetica', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
   /* Font weights */
   --font-weight-ultra-hairline: 100;
@@ -506,4 +565,37 @@ input:-moz-autofill {
 input:autofill {
   background-color: var(--form-background) !important;
   color: black !important;
+}
+
+/* Custom placeholder styling */
+input::placeholder {
+  color: #FFF !important;
+  font-size: 13px !important;
+  font-style: normal !important;
+  font-weight: 300 !important;
+  line-height: 17.25px !important;
+  letter-spacing: 0.195px !important;
+  font-family: var(--font-helvetica) !important;
+}
+
+/* Webkit placeholder styling for better browser support */
+input::-webkit-input-placeholder {
+  color: #FFF !important;
+  font-size: 13px !important;
+  font-style: normal !important;
+  font-weight: 300 !important;
+  line-height: 17.25px !important;
+  letter-spacing: 0.195px !important;
+  font-family: var(--font-helvetica) !important;
+}
+
+/* Firefox placeholder styling */
+input::-moz-placeholder {
+  color: #FFF !important;
+  font-size: 13px !important;
+  font-style: normal !important;
+  font-weight: 300 !important;
+  line-height: 17.25px !important;
+  letter-spacing: 0.195px !important;
+  font-family: var(--font-helvetica) !important;
 }
