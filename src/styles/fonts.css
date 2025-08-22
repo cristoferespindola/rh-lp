@@ -1,0 +1,483 @@
+/* RH Font Family Definitions */
+
+/* RH Sans Font Family */
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-UltraHairline.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-UltraHairlineItalic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Hairline.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-HairlineItalic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-UltraThin.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-UltraThinItalic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Thin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-ThinItalic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-ExtraLight.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-ExtraLightItalic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Light.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-LightItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Roman.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Medium.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-MediumItalic.woff2') format('woff2');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-Bold.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Sans';
+  src: url('../fonts/RHSans/RHSans_WOFF2/RHSans-BoldItalic.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* RH Serif Font Family */
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Hairline.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-HairlineItalic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Superfine.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-SuperfineItalic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-LightItalic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RH Serif';
+  src: url('../fonts/RHSerif/RHSerif_WOFF2/RHSerif-SemiboldItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* RHC (Condensed) Font Family */
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-UltraHairline.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-UltraHairlineItalic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-Hairline.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-HairlineItalic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-UltraThin.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-UltraThinItalic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-Thin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-ThinItalic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-Roman.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHC';
+  src: url('../fonts/RHC/RHC_WOFF2/RHC-Italic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* CSS Custom Properties for easy access */
+:root {
+  --font-rh-sans: 'RH Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-rh-serif: 'RH Serif', Georgia, 'Times New Roman', serif;
+  --font-rhc: 'RHC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Font weights */
+  --font-weight-ultra-hairline: 100;
+  --font-weight-hairline: 200;
+  --font-weight-ultra-thin: 300;
+  --font-weight-thin: 400;
+  --font-weight-extra-light: 500;
+  --font-weight-light: 600;
+  --font-weight-roman: 700;
+  --font-weight-medium: 800;
+  --font-weight-bold: 900;
+}
+
+/* Utility Classes */
+.font-rh-sans {
+  font-family: var(--font-rh-sans);
+}
+
+.font-rh-serif {
+  font-family: var(--font-rh-serif);
+}
+
+.font-rhc {
+  font-family: var(--font-rhc);
+}
+
+/* Font weight utilities */
+.font-ultra-hairline {
+  font-weight: var(--font-weight-ultra-hairline);
+}
+
+.font-hairline {
+  font-weight: var(--font-weight-hairline);
+}
+
+.font-ultra-thin {
+  font-weight: var(--font-weight-ultra-thin);
+}
+
+.font-thin {
+  font-weight: var(--font-weight-thin);
+}
+
+.font-extra-light {
+  font-weight: var(--font-weight-extra-light);
+}
+
+.font-light {
+  font-weight: var(--font-weight-light);
+}
+
+.font-roman {
+  font-weight: var(--font-weight-roman);
+}
+
+.font-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+/* Common combinations */
+.font-rh-sans-ultra-hairline {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-ultra-hairline);
+}
+
+.font-rh-sans-hairline {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-hairline);
+}
+
+.font-rh-sans-ultra-thin {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-ultra-thin);
+}
+
+.font-rh-sans-thin {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-thin);
+}
+
+.font-rh-sans-extra-light {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-extra-light);
+}
+
+.font-rh-sans-light {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-light);
+}
+
+.font-rh-sans-roman {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-roman);
+}
+
+.font-rh-sans-medium {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-medium);
+}
+
+.font-rh-sans-bold {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-bold);
+}
+
+/* RH Serif combinations */
+.font-rh-serif-hairline {
+  font-family: var(--font-rh-serif);
+  font-weight: var(--font-weight-ultra-hairline);
+}
+
+.font-rh-serif-superfine {
+  font-family: var(--font-rh-serif);
+  font-weight: var(--font-weight-hairline);
+}
+
+.font-rh-serif-light {
+  font-family: var(--font-rh-serif);
+  font-weight: var(--font-weight-ultra-thin);
+}
+
+.font-rh-serif-regular {
+  font-family: var(--font-rh-serif);
+  font-weight: var(--font-weight-thin);
+}
+
+.font-rh-serif-semibold {
+  font-family: var(--font-rh-serif);
+  font-weight: var(--font-weight-light);
+}
+
+/* RHC combinations */
+.font-rhc-ultra-hairline {
+  font-family: var(--font-rhc);
+  font-weight: var(--font-weight-ultra-hairline);
+}
+
+.font-rhc-hairline {
+  font-family: var(--font-rhc);
+  font-weight: var(--font-weight-hairline);
+}
+
+.font-rhc-ultra-thin {
+  font-family: var(--font-rhc);
+  font-weight: var(--font-weight-ultra-thin);
+}
+
+.font-rhc-thin {
+  font-family: var(--font-rhc);
+  font-weight: var(--font-weight-thin);
+}
+
+.font-rhc-roman {
+  font-family: var(--font-rhc);
+  font-weight: var(--font-weight-roman);
+}
+
+/* Default body font */
+body {
+  font-family: var(--font-rh-sans);
+  font-weight: var(--font-weight-roman);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

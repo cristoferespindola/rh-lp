@@ -1,103 +1,235 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import Logo from "@/components/logo";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  plusOne: string;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    plusOne: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      plusOne: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
+
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbyPRPn4Ix6u-J6JEeA8juthXBB4WGQKxJaYY2Jjc1-mSdmqzAQDZJ3v177Po1oDZ9s8/exec",
+        {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            "First Name": formData.firstName,
+            "Last Name": formData.lastName,
+            Email: formData.email,
+            Phone: formData.phone,
+            "Are you bringing a plus one": formData.plusOne,
+            Date: new Date().toISOString().split("T")[0],
+          }),
+        }
+      );
+
+      setSubmitStatus("success");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        plusOne: "",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <main className="max-w-5xl mx-auto px-4 py-12">
+        {/* Logo */}
+        <div className="flex justify-center mb-12">
+          <Logo />
         </div>
+
+        {/* Main Heading */}
+        <div className="text-center mb-8 max-w-md mx-auto mt-16">
+          <h1
+            className="text-3xl text-white mb-2 px-8"
+            style={{
+              textAlign: "center",
+              fontFamily: "RH Serif",
+              fontSize: "38px",
+              fontStyle: "normal",
+              fontWeight: "300",
+              lineHeight: "48px",
+              letterSpacing: "-1.3px",
+              textTransform: "uppercase",
+            }}
+          >
+            PLEASE CONFIRM YOUR RSVP
+          </h1>
+          <p className="text-white text-sm font-rh-sans pt-5" style={{
+              fontSize: "16px",
+              fontStyle: "normal",
+              fontWeight: "300",
+              lineHeight: "24px",
+              letterSpacing: "0.24px",
+          }}>
+            Kindly provide the following details.
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Fields */}
+          <div className="grid grid-cols-2 gap-4 mb-10">
+            <div>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                placeholder="First Name"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                placeholder="Last Name"
+              />
+            </div>
+          </div>
+
+          {/* Email and Phone Fields */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4">
+            <div>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+              />
+            </div>
+            <div>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                placeholder="Phone"
+              />
+            </div>
+
+            <div className="flex flex-col gap-4 relative">
+              <div className="w-full absolute -top-6 left-0">
+                <p className="text-white text-sm mb-2 font-rh-sans font-light">
+                  Will you be bringing a plus one?
+                </p>
+              </div>
+              <div className="w-full">
+                <Select onValueChange={handleSelectChange}>
+                  <SelectTrigger className="w-full px-3 py-2 !h-12 text-md bg-black border border-white text-white rounded-none focus:outline-none focus:border-white appearance-none font-rh-sans font-light">
+                    <SelectValue className="text-white font-rh-sans text-lg" placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black border border-white text-white rounded-none">
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-6 flex justify-center">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-1/2 mx-auto bg-white text-black font-rh-sans font-roman py-4 px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "SUBMITTING..." : "SUBMIT"}
+            </button>
+          </div>
+
+          {/* Status Messages */}
+          {submitStatus === "success" && (
+            <div className="mt-6 p-4 bg-green-900 border border-green-700">
+              <p className="text-sm font-medium text-green-300">
+                RSVP submitted successfully!
+              </p>
+            </div>
+          )}
+
+          {submitStatus === "error" && (
+            <div className="mt-6 p-4 bg-red-900 border border-red-700">
+              <p className="text-sm font-medium text-red-300">
+                Error submitting RSVP. Please try again.
+              </p>
+            </div>
+          )}
+        </form>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
