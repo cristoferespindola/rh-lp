@@ -120,11 +120,11 @@ export default function Home() {
             style={{
               textAlign: "center",
               fontFamily: "RH Serif",
-              fontSize: "19px",
+              fontSize: "15px",
               fontStyle: "normal",
               fontWeight: "300",
               lineHeight: "32px",
-              letterSpacing: "0.4px",
+              letterSpacing: "2.7px",
               textTransform: "uppercase",
             }}
           >
