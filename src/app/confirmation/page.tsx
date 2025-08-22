@@ -13,7 +13,7 @@ export default function Confirmation() {
               fontFamily: "RH Serif",
               fontStyle: "normal",
               fontWeight: "400",
-              padding: "0 70px",
+              padding: "0 68px",
               textTransform: "uppercase",
               letterSpacing: "0.48px",
             }}
