@@ -130,7 +130,9 @@ export default function Home() {
           >
             A CELEBRATION OF ARCHITECTURE, DESIGN, FOOD & WINE
           </h2>
-          <EventsDate />
+          <div className="flex flex-col my-8 justify-center items-center w-full">
+            <EventsDate />
+          </div>
           <h3
             className="text-3xl text-white"
             style={{
