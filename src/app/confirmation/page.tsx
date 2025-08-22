@@ -23,7 +23,7 @@ export default function Confirmation() {
         </div>
 
         {/* RH PARIS Logo */}
-        <div className="flex justify-center pb-12">
+        <div className="flex justify-center pb-28">
           <Logo width={166} height={135} />
         </div>
       </div>
