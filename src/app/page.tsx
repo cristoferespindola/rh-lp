@@ -154,8 +154,8 @@ export default function Home() {
           onSubmit={handleSubmit}
           className="space-y-6 flex flex-col gap-12"
         >
-              <div className="flex flex-col gap-8 mb-0">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
+              <div className="flex flex-col gap-7 mb-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <input
                       type="text"
@@ -183,7 +183,7 @@ export default function Home() {
                 </div>
 
                 {/* Email and Attendees Fields */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 mb-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-0">
                   <div>
                     <input
                       type="email"
