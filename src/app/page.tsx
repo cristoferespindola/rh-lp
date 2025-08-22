@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
 import Selector from "@/components/selector";
 import EventsDate from "@/components/date";
+import MainLogo from "@/components/logo/Main";
 
 interface FormData {
   firstName: string;
@@ -63,7 +64,7 @@ export default function Home() {
             "First Name": formData.firstName,
             "Last Name": formData.lastName,
             Email: formData.email,
-            Phone: '',
+            Phone: "",
             "Number of Guests": formData.plusOne,
             Date: new Date().toISOString().split("T")[0],
           }),
@@ -78,7 +79,7 @@ export default function Home() {
         phone: "",
         plusOne: "1",
       });
-      
+
       // Redirect to confirmation page after a short delay
       setTimeout(() => {
         router.push("/confirmation");
@@ -94,141 +95,112 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-10 lg:gap-12">
-        {/* Logo */}
-        <div className="flex justify-center">
-          <Logo />
-        </div>
-
-        {/* Main Heading */}
-        <div className="text-center max-w-[577px] mx-auto flex flex-col gap-4 items-center justify-center">
-          <h1
-            className="text-3xl text-white"
-            style={{
-              textAlign: "center",
-              fontFamily: "RH Serif",
-              fontSize: "29px",
-              fontStyle: "normal",
-              fontWeight: "300",
-              lineHeight: "32px",
-              textTransform: "uppercase",
-            }}
-          >
-            THE GALLERY ON THE CHAMPS-ÉLYSÉES
-          </h1>
-          <h2
-            className="text-3xl text-white"
-            style={{
-              textAlign: "center",
-              fontFamily: "RH Serif",
-              fontSize: "15px",
-              fontStyle: "normal",
-              fontWeight: "300",
-              lineHeight: "20px",
-              letterSpacing: "2.7px",
-              textTransform: "uppercase",
-            }}
-          >
-            A CELEBRATION OF ARCHITECTURE, DESIGN, FOOD & WINE
-          </h2>
-          <div className="flex flex-col my-8 justify-center items-center w-full">
-            <EventsDate />
+        <div className="flex flex-col md:max-w-[80%] lg:max-w-none mx-auto">
+          <div className="flex justify-center">
+            <MainLogo />
           </div>
-          <h3
-            className="text-3xl text-white"
-            style={{
-              textAlign: "center",
-              fontFamily: "RH Serif",
-              fontSize: "15px",
-              fontStyle: "normal",
-              fontWeight: "300",
-              lineHeight: "20px",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-            }}
-          >
-            23 Avenue des Champs-élysées
-          </h3>
+
+          <div className="text-center max-w-[577px] mx-auto flex flex-col gap-4 items-center justify-center">
+            <div className="flex flex-col my-8 justify-center items-center w-full">
+              <EventsDate />
+            </div>
+            <h3
+              className="text-3xl text-white"
+              style={{
+                textAlign: "center",
+                fontFamily: "RH Serif",
+                fontSize: "15px",
+                fontStyle: "normal",
+                fontWeight: "300",
+                lineHeight: "20px",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}
+            >
+              23 Avenue des Champs-élysées
+            </h3>
+          </div>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 flex flex-col gap-12"
+          className="space-y-6 flex flex-col gap-12 px-5 md:max-w-[80%] lg:max-w-none w-full mx-auto"
         >
-              <div className="flex flex-col gap-7 mb-0">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                      placeholder="First Name*"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                      placeholder="Last Name*"
-                    />
-                  </div>
-                </div>
+          <div className="flex flex-col gap-7 mb-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                  placeholder="First Name*"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                  placeholder="Last Name*"
+                />
+              </div>
+            </div>
 
-                {/* Email and Attendees Fields */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-0">
-                  <div>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      placeholder="Email*"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-4 relative">
-                    <div className="w-full">
-                      <Selector 
-                        value={formData.plusOne} 
-                        onChange={handleSelectChange} 
-                        required 
-                      />
-                    </div>
-                  </div>
-                </div>
+            {/* Email and Attendees Fields */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-0">
+              <div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Email*"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                />
               </div>
 
-              <div className="flex flex-col justify-center relative">
-                <div className="absolute -top-[76px] lg:-top-16 left-0 w-full">
-                  {submitStatus === "error" ? (
-                    <div className="p-4 bg-transparent border border-red-700">
-                      <p className="text-sm font-medium text-red-300">
-                        Error submitting. Please try again.
-                      </p>
-                    </div>
-                  ) : null}
+              <div className="flex flex-col gap-4 relative">
+                <div className="w-full">
+                  <Selector
+                    value={formData.plusOne}
+                    onChange={handleSelectChange}
+                    required
+                  />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-[235px] mx-auto bg-white cursor-pointer text-black font-rh-sans font-roman h-12 flex items-center justify-center px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
-                </button>
               </div>
-            </form>
-          </main>
-        </div>
-      );
-    }
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center relative">
+            <div className="absolute -top-[76px] lg:-top-16 left-0 w-full">
+              {submitStatus === "error" ? (
+                <div className="p-4 bg-transparent border border-red-700">
+                  <p className="text-sm font-medium text-red-300">
+                    Error submitting. Please try again.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-[235px] mx-auto bg-white cursor-pointer text-black font-rh-sans font-roman h-12 flex items-center justify-center px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+  );
+}
