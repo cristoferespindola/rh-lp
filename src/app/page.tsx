@@ -120,14 +120,14 @@ export default function Home() {
             style={{
               textAlign: "center",
               fontFamily: "RH Serif",
-              fontSize: "20px",
+              fontSize: "19px",
               fontStyle: "normal",
               fontWeight: "300",
               lineHeight: "32px",
               textTransform: "uppercase",
             }}
           >
-            CELEBRATION OF ARCHITECTURE, DESIGN, FOOD & WINE
+            A CELEBRATION OF ARCHITECTURE, DESIGN, FOOD & WINE
           </h2>
           <EventsDate />
           <h3
