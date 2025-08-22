@@ -126,7 +126,7 @@ export default function Home() {
           onSubmit={handleSubmit}
           className="space-y-6 flex flex-col gap-12 px-5 md:max-w-[80%] lg:max-w-none w-full mx-auto"
         >
-          <div className="flex flex-col gap-7 mb-0">
+          <div className="flex flex-col gap-4 mb-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <input
