@@ -8,15 +8,14 @@ export default function Confirmation() {
         <div className="flex-1 flex flex-col items-center justify-center">
           {/* Thank you message */}
           <h1 
-            className="text-white text-center"
+            className="text-white text-center text-normal md:text-3xl"
             style={{
               fontFamily: "RH Serif",
-              fontSize: "32px",
               fontStyle: "normal",
-              fontWeight: "300",
-              lineHeight: "40px",
+              fontWeight: "400",
+              padding: "0 90px",
               textTransform: "uppercase",
-              letterSpacing: "-0.5px",
+              letterSpacing: "0.48px",
             }}
           >
             THANK YOU FOR CONFIRMING YOUR RSVP
