@@ -49,7 +49,6 @@ export default function Home() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");
-    console.log("Form data:", formData);
 
     try {
       const response = await fetch(
