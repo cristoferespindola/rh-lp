@@ -66,7 +66,7 @@ export default function Home() {
             "First Name": formData.firstName,
             "Last Name": formData.lastName,
             Email: formData.email,
-            Phone: formData.phone,
+            Phone: '',
             "Number of Guests": formData.plusOne,
             Date: new Date().toISOString().split("T")[0],
           }),
@@ -150,7 +150,7 @@ export default function Home() {
                 </div>
 
                 {/* Email and Phone Fields */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4 mb-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 mb-0">
                   <div>
                     <input
                       type="email"
@@ -163,21 +163,10 @@ export default function Home() {
                       className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
                     />
                   </div>
-                  <div>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                      placeholder="Phone"
-                    />
-                  </div>
 
                   <div className="flex flex-col gap-4 relative">
                     <div className="w-full">
-                      <Select onValueChange={handleSelectChange}>
+                      <Select onValueChange={handleSelectChange} required>
                         <SelectTrigger className="w-full px-3 py-2 !h-12 text-md bg-black border border-white text-white rounded-none focus:outline-none focus:border-white appearance-none font-rh-sans font-light">
                           <SelectValue
                             className="text-white font-rh-sans text-lg"
@@ -186,9 +175,7 @@ export default function Home() {
                         </SelectTrigger>
                         <SelectContent className="bg-black border border-white text-white rounded-none">
                           <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="2">
-                            2 (you and a a guest)
-                          </SelectItem>
+                          <SelectItem value="2">2 (you and a guest)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -201,18 +188,18 @@ export default function Home() {
                   {submitStatus === "error" ? (
                     <div className="p-4 bg-transparent border border-red-700">
                       <p className="text-sm font-medium text-red-300">
-                        Error submitting RSVP. Please try again.
+                        Error submitting. Please try again.
                       </p>
                     </div>
                   ) : null}
                 </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-1/2 mx-auto bg-white cursor-pointer text-black font-rh-sans font-roman py-4 px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
-                  </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-1/2 mx-auto bg-white cursor-pointer text-black font-rh-sans font-roman py-4 px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
+                </button>
               </div>
             </form>
           </>
