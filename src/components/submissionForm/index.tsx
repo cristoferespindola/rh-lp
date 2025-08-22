@@ -81,12 +81,14 @@ const FORM_FIELDS: {
     label: "Last Name",
     required: true,
     type: "text",
+    placeholder: "Last Name*",
   },
   {
     name: "email",
     label: "Email",
     required: true,
     type: "email",
+    placeholder: "Email*",
   },
   {
     name: "plusOne",
