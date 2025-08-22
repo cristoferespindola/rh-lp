@@ -124,6 +124,7 @@ export default function Home() {
               fontStyle: "normal",
               fontWeight: "300",
               lineHeight: "32px",
+              letterSpacing: "0.4px",
               textTransform: "uppercase",
             }}
           >
@@ -162,7 +163,7 @@ export default function Home() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                      placeholder="First Name"
+                      placeholder="First Name*"
                     />
                   </div>
                   <div>
@@ -174,7 +175,7 @@ export default function Home() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                      placeholder="Last Name"
+                      placeholder="Last Name*"
                     />
                   </div>
                 </div>
@@ -186,7 +187,7 @@ export default function Home() {
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="Email"
+                      placeholder="Email*"
                       value={formData.email}
                       onChange={handleInputChange}
                       required
