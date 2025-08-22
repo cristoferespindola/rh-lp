@@ -195,18 +195,22 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex flex-col gap-8 mb-0">
-              <div className="p-4 bg-transparent">
-                <p className="text-sm font-medium text-white font-rh-sans" style={{
-                  textAlign: "center",
-                  fontFamily: "RH sans",
-                  fontSize: "29px",
-                  fontStyle: "normal",
-                  fontWeight: "300",
-                  lineHeight: "36px",
-                  textTransform: "uppercase",
-                }}>
-                  Thank you for confirming your attendance. We look forward to
-                  welcoming you for the unveiling of RH Paris.
+              <div className="bg-transparent max-w-[732px] mx-auto">
+                <p
+                  className="text-sm font-medium text-white font-rh-sans"
+                  style={{
+                    textAlign: "center",
+                    fontFamily: "RH Serif",
+                    fontSize: "29px",
+                    fontStyle: "normal",
+                    fontWeight: "300",
+                    lineHeight: "36px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  thank you for confirming your attendance.
+                  <br /><br />
+                  we look forward to welcoming you<br />forthe unveiling of rh paris.
                 </p>
               </div>
             </div>
