@@ -120,91 +120,101 @@ export default function Home() {
           onSubmit={handleSubmit}
           className="space-y-6 flex flex-col gap-20"
         >
-          {/* Name Fields */}
-          <div className="flex flex-col gap-8 mb-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
-              <div>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                  placeholder="First Name"
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                  placeholder="Last Name"
-                />
-              </div>
-            </div>
-
-            {/* Email and Phone Fields */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4 mb-0">
-              <div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                />
-              </div>
-              <div>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
-                  placeholder="Phone"
-                />
+          {submitStatus !== "success" && submitStatus !== "error" ? (
+            <div className="flex flex-col gap-8 mb-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
+                <div>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                    placeholder="First Name"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                    placeholder="Last Name"
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-4 relative">
-                <div className="w-full">
-                  <Select onValueChange={handleSelectChange}>
-                    <SelectTrigger className="w-full px-3 py-2 !h-12 text-md bg-black border border-white text-white rounded-none focus:outline-none focus:border-white appearance-none font-rh-sans font-light">
-                      <SelectValue
-                        className="text-white font-rh-sans text-lg"
-                        placeholder="Number of Guests"
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="bg-black border border-white text-white rounded-none">
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2 (you and a a guest)</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Email and Phone Fields */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4 mb-0">
+                <div>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 h-12 bg-black border border-white text-white rounded-none focus:outline-none focus:border-white font-rh-sans font-light placeholder-gray-400"
+                    placeholder="Phone"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-4 relative">
+                  <div className="w-full">
+                    <Select onValueChange={handleSelectChange}>
+                      <SelectTrigger className="w-full px-3 py-2 !h-12 text-md bg-black border border-white text-white rounded-none focus:outline-none focus:border-white appearance-none font-rh-sans font-light">
+                        <SelectValue
+                          className="text-white font-rh-sans text-lg"
+                          placeholder="Number of Guests"
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black border border-white text-white rounded-none">
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2 (you and a a guest)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-8 mb-0">
+              <div className="p-4 bg-transparent">
+                <p className="text-sm font-medium text-white font-rh-sans" style={{
+                  textAlign: "center",
+                  fontFamily: "RH sans",
+                  fontSize: "29px",
+                  fontStyle: "normal",
+                  fontWeight: "300",
+                  lineHeight: "36px",
+                  textTransform: "uppercase",
+                }}>
+                  Thank you for confirming your attendance. We look forward to
+                  welcoming you for the unveiling of RH Paris.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col justify-center relative">
             {/* Status Messages */}
-            <div className="absolute -top-16 left-0 w-full">
-              {submitStatus === "success" && (
-                <div className="p-4 bg-transparent border border-white">
-                  <p className="text-sm font-medium text-white font-rh-sans">
-                    RSVP submitted successfully!
-                  </p>
-                </div>
-              )}
-
+            <div className="absolute -top-[76px] lg:-top-16 left-0 w-full">
               {submitStatus === "error" && (
                 <div className="p-4 bg-transparent border border-red-700">
                   <p className="text-sm font-medium text-red-300">
@@ -214,14 +224,16 @@ export default function Home() {
               )}
             </div>
 
-          {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-1/2 mx-auto bg-white text-black font-rh-sans font-roman py-4 px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
-            </button>
+            {/* Submit Button */}
+            {submitStatus !== "success" && submitStatus !== "error" && (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-1/2 mx-auto bg-white text-black font-rh-sans font-roman py-4 px-8 hover:bg-gray-100 focus:outline-none transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "SUBMITTING..." : "CONFIRM"}
+              </button>
+            )}
           </div>
         </form>
       </main>
