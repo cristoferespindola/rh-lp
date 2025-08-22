@@ -98,7 +98,7 @@ export default function Home() {
         </div>
 
         {/* Main Heading */}
-        <div className="text-center mb-8 max-w-md mx-auto mt-16">
+        <div className="text-center mb-4 lg:mb-8 max-w-md mx-auto mt-12 lg:mt-16">
           <h1
             className="text-3xl text-white mb-2 px-8"
             style={{
@@ -126,9 +126,9 @@ export default function Home() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 flex flex-col lg:gap-4">
           {/* Name Fields */}
-          <div className="grid grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4">
             <div>
               <input
                 type="text"
@@ -156,7 +156,7 @@ export default function Home() {
           </div>
 
           {/* Email and Phone Fields */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-4 mb-0">
             <div>
               <input
                 type="email"
@@ -202,7 +202,7 @@ export default function Home() {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-6 flex justify-center">
+          <div className="pt-4 lg:pt-6 flex justify-center">
             <button
               type="submit"
               disabled={isSubmitting}
