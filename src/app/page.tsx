@@ -186,7 +186,7 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent className="bg-black border border-white text-white rounded-none">
                       <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2(you and a a guest)</SelectItem>
+                      <SelectItem value="2">2 (you and a a guest)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
