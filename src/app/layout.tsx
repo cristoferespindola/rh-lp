@@ -28,6 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" >
+       <meta http-equiv="Permissions-Policy" content="fullscreen=(self)" />
+       <meta name="fullscreen-allowed" content="true" />
+
       <body className={`${inter.variable} font-sans antialiased`} style={{ backgroundColor: "#000" }}>
         {children}
         <Toaster />
