@@ -20,7 +20,7 @@
   width: 100vw !important;
   height: 100vh !important;
   height: 100dvh !important;
-  background-color: #000 !important; /* Added for desktop */
+  background-color: #000 !important;
 }
 .wistia_embed iframe {
   width: 100% !important;
@@ -33,29 +33,14 @@
   object-fit: cover !important;
 }
 
-/* Hide Wistia chrome elements and default play button */
+/* Hide Wistia chrome elements only on mobile portrait */
 @media screen and (max-width: 768px) {
   [id^="wistia_chrome_"] {
     display: none !important;
   }
 
-  /* Hide the default big play button */
-  .w-big-play-button {
-    display: none !important;
-  }
-
-  /* Hide the default play button wrapper */
-  .w-bpb-wrapper {
-    display: none !important;
-  }
-
-  /* Hide any other Wistia UI elements */
-  .w-ui-container {
-    display: none !important;
-  }
-
   .landscape-mode [id^="wistia_chrome_"] {
-    display: none !important;
+    display: inline-block !important;
   }
 }
 
@@ -78,20 +63,19 @@
     background-color: #000 !important;
   }
 
-  /* iPhone safe area support */
   @supports (padding: env(safe-area-inset-top)) {
     body {
-      padding-top: env(safe-area-inset-top) !important;
+      /* padding-top: env(safe-area-inset-top) !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       padding-left: env(safe-area-inset-left) !important;
-      padding-right: env(safe-area-inset-right) !important;
+      padding-right: env(safe-area-inset-right) !important; */
     }
 
     .min-h-screen {
-      padding-top: env(safe-area-inset-top) !important;
+      /* padding-top: env(safe-area-inset-top) !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       padding-left: env(safe-area-inset-left) !important;
-      padding-right: env(safe-area-inset-right) !important;
+      padding-right: env(safe-area-inset-right) !important; */
     }
   }
 }
