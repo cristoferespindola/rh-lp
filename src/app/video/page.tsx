@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
 
+import "./style.css";
+
 export default function VideoPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -20,18 +22,18 @@ export default function VideoPage() {
       }
     }
 
-    // Only clear our container, don't remove it
     if (ref.current) {
       ref.current.innerHTML = "";
     }
 
-    const wistiaMessage = document.querySelector('#video-message ~ div') as HTMLElement;
+    const wistiaMessage = document.querySelector(
+      "#video-message ~ div"
+    ) as HTMLElement;
     if (wistiaMessage) {
-        console.log("wistiaMessage", wistiaMessage);
-      wistiaMessage.style.display = 'none';
+      console.log("wistiaMessage", wistiaMessage);
+      wistiaMessage.style.display = "none";
     }
 
-    // Only remove Wistia chrome elements, not our containers
     const wistiaChromeElements = document.querySelectorAll(
       '[id^="wistia_chrome_"]'
     );
@@ -46,6 +48,9 @@ export default function VideoPage() {
         const script = document.createElement("script");
         script.src = "//fast.wistia.com/assets/external/E-v1.js";
         script.async = true;
+        script.onload = () => {
+          console.log("Wistia script loaded");
+        };
         document.head.appendChild(script);
       }
     };
@@ -63,7 +68,6 @@ export default function VideoPage() {
       setIsMobile(isMobileDevice);
     };
 
-    // Check orientation
     const checkOrientation = () => {
       const isLandscapeOrientation = window.innerWidth > window.innerHeight;
       console.log("Orientation check:", {
@@ -100,7 +104,6 @@ export default function VideoPage() {
       window.addEventListener("deviceorientation", handleOrientationChange);
     }
 
-    // Cleanup
     return () => {
       window.removeEventListener("orientationchange", handleOrientationChange);
       window.removeEventListener("resize", handleResize);
@@ -118,13 +121,69 @@ export default function VideoPage() {
       const initVideo = () => {
         const wistiaWindow = window as Window & {
           Wistia?: {
-            api: (id: string) => { play: () => void; pause: () => void };
+            api: (id: string) => {
+              play: () => void;
+              pause: () => void;
+            };
           };
         };
         if (wistiaWindow.Wistia) {
           const video = wistiaWindow.Wistia.api("avj1qhbupb");
           if (video) {
+            console.log("Wistia video found, attempting to play...");
             video.play();
+            console.log("Play command sent to Wistia");
+
+            const waitForVideoElement = () => {
+              const videoElement = document.querySelector(
+                "#wistia-video-mobile video"
+              ) as HTMLVideoElement & {
+                mozRequestFullScreen?: () => void;
+                webkitRequestFullscreen?: () => void;
+                webkitEnterFullscreen?: () => void;
+              };
+
+              if (videoElement) {
+                console.log(
+                  "Video element found, attempting to enter fullscreen..."
+                );
+
+                // Try to play the video element directly as well
+                if (videoElement.paused) {
+                  console.log("Video is paused, attempting to play...");
+                  videoElement
+                    .play()
+                    .then(() => {
+                      console.log("Video element play successful");
+                    })
+                    .catch(err => {
+                      console.log("Video element play failed:", err);
+                    });
+                }
+
+                if (videoElement.requestFullscreen) {
+                  videoElement
+                    .requestFullscreen()
+                    .catch(err => console.log("Fullscreen error:", err));
+                } else if (videoElement.mozRequestFullScreen) {
+                  videoElement.mozRequestFullScreen();
+                } else if (videoElement.webkitRequestFullscreen) {
+                  videoElement.webkitRequestFullscreen();
+                } else if (videoElement.webkitEnterFullscreen) {
+                  videoElement.webkitEnterFullscreen();
+                }
+              } else {
+                console.log("Video element not found, retrying...");
+                setTimeout(waitForVideoElement, 500);
+              }
+            };
+
+            setTimeout(waitForVideoElement, 1000);
+
+            setTimeout(() => {
+              console.log("Retrying play command...");
+              video.play();
+            }, 3000);
           }
         } else {
           setTimeout(initVideo, 500);
@@ -154,98 +213,6 @@ export default function VideoPage() {
       }, 100);
     }
   }, [isMobile, isLandscape]);
-
-
-  useEffect(() => {
-    const configureVideoStyling = () => {
-      const style = document.createElement("style");
-      style.textContent = `
-        /* Mobile viewport fixes */
-        body {
-          margin: 0 !important;
-          padding: 0 !important;
-          overflow: hidden !important;
-        }
-        
-        /* Full screen container */
-        .min-h-screen {
-          min-height: 100vh !important;
-          min-height: 100dvh !important;
-          width: 100vw !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-        
-        .wistia_embed {
-          position: relative !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          height: 100dvh !important;
-        }
-        .wistia_embed iframe {
-          width: 100% !important;
-          height: 100% !important;
-          object-fit: cover !important;
-        }
-        .wistia_embed video {
-          width: 100% !important;
-          height: 100% !important;
-          object-fit: cover !important;
-        }
-        
-        /* Hide Wistia chrome elements when in portrait mode */
-        [id^="wistia_chrome_"] {
-          display: none !important;
-        }
-        
-        /* Show Wistia chrome elements only when in landscape and video is ready */
-        .landscape-mode [id^="wistia_chrome_"] {
-          display: inline-block !important;
-        }
-        
-        /* Mobile specific fixes */
-        @media screen and (max-width: 768px) {
-          body {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            background-color: #000 !important;
-          }
-          
-          .min-h-screen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            background-color: #000 !important;
-          }
-          
-          /* iPhone safe area support */
-          @supports (padding: env(safe-area-inset-top)) {
-            body {
-              padding-top: env(safe-area-inset-top) !important;
-              padding-bottom: env(safe-area-inset-bottom) !important;
-              padding-left: env(safe-area-inset-left) !important;
-              padding-right: env(safe-area-inset-right) !important;
-            }
-            
-            .min-h-screen {
-              padding-top: env(safe-area-inset-top) !important;
-              padding-bottom: env(safe-area-inset-bottom) !important;
-              padding-left: env(safe-area-inset-left) !important;
-              padding-right: env(safe-area-inset-right) !important;
-            }
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    };
-
-    configureVideoStyling();
-  }, []);
 
   if (!isMobile) {
     return (

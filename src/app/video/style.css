@@ -1,0 +1,74 @@
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.min-h-screen {
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.wistia_embed {
+  position: relative !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+.wistia_embed iframe {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+.wistia_embed video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+[id^="wistia_chrome_"] {
+  display: none !important;
+}
+
+.landscape-mode [id^="wistia_chrome_"] {
+  display: inline-block !important;
+}
+
+@media screen and (max-width: 768px) {
+  body {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: #000 !important;
+  }
+
+  .min-h-screen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: #000 !important;
+  }
+
+  @supports (padding: env(safe-area-inset-top)) {
+    body {
+      padding-top: env(safe-area-inset-top) !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
+      padding-left: env(safe-area-inset-left) !important;
+      padding-right: env(safe-area-inset-right) !important;
+    }
+
+    .min-h-screen {
+      padding-top: env(safe-area-inset-top) !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
+      padding-left: env(safe-area-inset-left) !important;
+      padding-right: env(safe-area-inset-right) !important;
+    }
+  }
+}
