@@ -5,6 +5,7 @@ import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
 import { Maximize, Minimize } from "lucide-react";
 
 import "./style.css";
+import { domEvent } from "dom-event-simulate";
 
 export default function VideoPage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -12,6 +13,51 @@ export default function VideoPage() {
   const [showVideo, setShowVideo] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
+
+  const simulateFullscreenClick = () => {
+    console.log("Simulating fullscreen click...");
+    
+    if (fullscreenButtonRef.current) {
+      const button = fullscreenButtonRef.current;
+      const rect = button.getBoundingClientRect();
+      
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      console.log("Button coordinates:", { centerX, centerY, rect });
+      
+      // Simulate mouse/touch events
+      try {
+        // Simulate mousedown
+        domEvent(button, 'mousedown', {
+          clientX: centerX,
+          clientY: centerY,
+        });
+        
+        // Simulate mouseup (click)
+        domEvent(button, 'mouseup', {
+          clientX: centerX,
+          clientY: centerY,
+        });
+        
+        // Simulate click
+        domEvent(button, 'click', {
+          clientX: centerX,
+          clientY: centerY,
+        });
+        domEvent(button, 'touchstart', {
+          clientX: centerX,
+          clientY: centerY,
+        });
+        
+        console.log("Click simulation completed");
+      } catch (error) {
+        console.log("Click simulation failed:", error);
+      }
+    }
+  };
+
 
   const toggleFullscreen = (
     videoElement: HTMLVideoElement & {
@@ -226,6 +272,9 @@ export default function VideoPage() {
             // First, try to play via Wistia API
             try {
               video.play();
+              setTimeout(() => {
+                simulateFullscreenClick();
+              }, 1000);
               console.log("Play command sent to Wistia");
             } catch (err) {
               console.log("Wistia play failed:", err);
@@ -432,6 +481,7 @@ export default function VideoPage() {
         />
 
         <button
+            ref={fullscreenButtonRef}
           onClick={() => {
             const wistiaWindow = window as Window & {
               Wistia?: {
