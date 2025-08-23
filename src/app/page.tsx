@@ -1,6 +1,7 @@
 import SubmissionForm from "@/components/submissionForm";
 import EventsDate from "@/components/svg/EventDate";
 import MainLogo from "@/components/svg/Main";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -34,6 +35,15 @@ export default function Home() {
         </div>
 
         <SubmissionForm />
+
+        <div className="text-center mt-8">
+          <Link 
+            href="/video" 
+            className="inline-block bg-white text-black font-rh-sans font-roman px-8 py-3 hover:bg-gray-100 transition duration-200"
+          >
+            Watch Video
+          </Link>
+        </div>
       </main>
     </div>
   );
