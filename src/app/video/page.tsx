@@ -163,6 +163,10 @@ export default function VideoPage() {
 
   useEffect(() => {
     const loadWistiaScript = () => {
+        if(typeof window === 'undefined') {
+            return;
+        }
+        
       if (!document.querySelector('script[src*="fast.wistia.com"]')) {
         const script = document.createElement("script");
         script.src = "//fast.wistia.com/assets/external/E-v1.js";
