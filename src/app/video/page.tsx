@@ -290,6 +290,10 @@ export default function VideoPage() {
 
             // Wait for video element and handle fullscreen
             const waitForVideoElement = () => {
+                if(typeof window === 'undefined') {
+                    return;
+                }
+                
               const videoElement = document.querySelector(
                 "#wistia-video-mobile video"
               ) as HTMLVideoElement & {
@@ -404,11 +408,15 @@ export default function VideoPage() {
 
   // Listen for fullscreen changes
   useEffect(() => {
-    const handleFullscreenChange = () => {
+    const handleFullscreenChange = () => {        
       if (!document.fullscreenElement) {
         setIsFullscreen(false);
       }
     };
+
+    if(typeof window === 'undefined') {
+        return;
+    }
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
