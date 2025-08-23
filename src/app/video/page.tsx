@@ -66,6 +66,10 @@ export default function VideoPage() {
       webkitEnterFullscreen?: () => void;
     }
   ) => {
+    if(typeof window === 'undefined') {
+        return;
+    }
+    
     if (isFullscreen) {
       // Exit fullscreen
       console.log("Exiting fullscreen...");
