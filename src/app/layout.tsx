@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import type { Viewport } from 'next';
 
 export const viewport: Viewport = {
   viewportFit: 'cover',
@@ -11,6 +10,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
 };
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -27,10 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" >
-       <meta http-equiv="Permissions-Policy" content="fullscreen=(self)" />
-       <meta name="fullscreen-allowed" content="true" />
-
+    <html lang="en">
+      <head>
+        <meta httpEquiv="Permissions-Policy" content="fullscreen=(self)" />
+        <meta name="fullscreen-allowed" content="true" />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`} style={{ backgroundColor: "#000" }}>
         {children}
         <Toaster />
