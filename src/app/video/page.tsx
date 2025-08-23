@@ -11,6 +11,74 @@ export default function VideoPage() {
   const [showVideo, setShowVideo] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const enterFullscreen = (videoElement: HTMLVideoElement & {
+    mozRequestFullScreen?: () => void;
+    webkitRequestFullscreen?: () => void;
+    webkitEnterFullscreen?: () => void;
+  }) => {
+    console.log("Attempting to enter fullscreen via user interaction...");
+    
+    // Create a hidden button and click it to trigger fullscreen
+    const fullscreenButton = document.createElement('button');
+    fullscreenButton.style.position = 'absolute';
+    fullscreenButton.style.left = '-9999px';
+    fullscreenButton.style.top = '-9999px';
+    fullscreenButton.style.opacity = '0';
+    fullscreenButton.style.pointerEvents = 'none';
+    
+    fullscreenButton.onclick = () => {
+      console.log("Fullscreen button clicked, entering fullscreen...");
+      
+      // Try Wistia API first (more reliable)
+      const wistiaWindow = window as Window & {
+        Wistia?: {
+          api: (id: string) => {
+            requestFullscreen: () => void;
+          };
+        };
+      };
+      
+      if (wistiaWindow.Wistia) {
+        const video = wistiaWindow.Wistia.api("avj1qhbupb");
+        const storedVideo = (window as Window & { wistiaVideo?: { requestFullscreen: () => void } }).wistiaVideo;
+        
+        if (storedVideo && storedVideo.requestFullscreen) {
+          console.log("Using stored Wistia video for fullscreen");
+          storedVideo.requestFullscreen();
+        } else if (video && video.requestFullscreen) {
+          console.log("Using Wistia API for fullscreen");
+          video.requestFullscreen();
+        } else {
+          console.log("Using native fullscreen API");
+          if (videoElement.requestFullscreen) {
+            videoElement.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+          } else if (videoElement.mozRequestFullScreen) {
+            videoElement.mozRequestFullScreen();
+          } else if (videoElement.webkitRequestFullscreen) {
+            videoElement.webkitRequestFullscreen();
+          } else if (videoElement.webkitEnterFullscreen) {
+            videoElement.webkitEnterFullscreen();
+          }
+        }
+      } else {
+        if (videoElement.requestFullscreen) {
+          videoElement.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+        } else if (videoElement.mozRequestFullScreen) {
+          videoElement.mozRequestFullScreen();
+        } else if (videoElement.webkitRequestFullscreen) {
+          videoElement.webkitRequestFullscreen();
+        } else if (videoElement.webkitEnterFullscreen) {
+          videoElement.webkitEnterFullscreen();
+        }
+      }
+      
+      document.body.removeChild(fullscreenButton);
+    };
+    
+    document.body.appendChild(fullscreenButton);
+    fullscreenButton.click();
+  };
+
   const stopVideo = () => {
     const wistiaWindow = window as Window & {
       Wistia?: { api: (id: string) => { pause: () => void; play: () => void } };
@@ -50,6 +118,20 @@ export default function VideoPage() {
         script.async = true;
         script.onload = () => {
           console.log("Wistia script loaded");
+            
+          const wistiaWindow = window as Window & {
+            _wq?: Array<{ id: string; onReady: (video: { requestFullscreen: () => void }) => void }>;
+          };
+          
+          if (wistiaWindow._wq) {
+            wistiaWindow._wq.push({
+              id: "avj1qhbupb",
+              onReady: (video) => {
+                console.log("Wistia video ready via queue");
+                (window as Window & { wistiaVideo?: { requestFullscreen: () => void } }).wistiaVideo = video;
+              }
+            });
+          }
         };
         document.head.appendChild(script);
       }
@@ -118,6 +200,8 @@ export default function VideoPage() {
 
   useEffect(() => {
     if (isMobile && isLandscape && showVideo) {
+      console.log("Mobile landscape detected, initializing video...");
+      
       const initVideo = () => {
         const wistiaWindow = window as Window & {
           Wistia?: {
@@ -127,13 +211,21 @@ export default function VideoPage() {
             };
           };
         };
+        
         if (wistiaWindow.Wistia) {
           const video = wistiaWindow.Wistia.api("avj1qhbupb");
           if (video) {
             console.log("Wistia video found, attempting to play...");
-            video.play();
-            console.log("Play command sent to Wistia");
-
+            
+            // First, try to play via Wistia API
+            try {
+              video.play();
+              console.log("Play command sent to Wistia");
+            } catch (err) {
+              console.log("Wistia play failed:", err);
+            }
+            
+            // Wait for video element and handle fullscreen
             const waitForVideoElement = () => {
               const videoElement = document.querySelector(
                 "#wistia-video-mobile video"
@@ -144,52 +236,49 @@ export default function VideoPage() {
               };
 
               if (videoElement) {
-                console.log(
-                  "Video element found, attempting to enter fullscreen..."
-                );
-
-                // Try to play the video element directly as well
+                console.log("Video element found, attempting to play and enter fullscreen...");
+                
+                // Try to play the video element directly
                 if (videoElement.paused) {
                   console.log("Video is paused, attempting to play...");
                   videoElement
                     .play()
                     .then(() => {
                       console.log("Video element play successful");
+                      // Enter fullscreen after successful play
+                      setTimeout(() => {
+                        enterFullscreen(videoElement);
+                      }, 1000);
                     })
                     .catch(err => {
                       console.log("Video element play failed:", err);
                     });
-                }
-
-                if (videoElement.requestFullscreen) {
-                  videoElement
-                    .requestFullscreen()
-                    .catch(err => console.log("Fullscreen error:", err));
-                } else if (videoElement.mozRequestFullScreen) {
-                  videoElement.mozRequestFullScreen();
-                } else if (videoElement.webkitRequestFullscreen) {
-                  videoElement.webkitRequestFullscreen();
-                } else if (videoElement.webkitEnterFullscreen) {
-                  videoElement.webkitEnterFullscreen();
+                } else {
+                  // Video is already playing, enter fullscreen
+                  setTimeout(() => {
+                    enterFullscreen(videoElement);
+                  }, 1000);
                 }
               } else {
                 console.log("Video element not found, retrying...");
-                setTimeout(waitForVideoElement, 500);
+                setTimeout(waitForVideoElement, 1000);
               }
             };
-
-            setTimeout(waitForVideoElement, 1000);
-
-            setTimeout(() => {
-              console.log("Retrying play command...");
-              video.play();
-            }, 3000);
+            
+            // Start checking for video element after 2 seconds
+            setTimeout(waitForVideoElement, 2000);
+            
+          } else {
+            console.log("Wistia video not found, retrying...");
+            setTimeout(initVideo, 1000);
           }
         } else {
-          setTimeout(initVideo, 500);
+          console.log("Wistia not ready, retrying...");
+          setTimeout(initVideo, 1000);
         }
       };
 
+      // Start initialization after 1 second
       setTimeout(initVideo, 1000);
     }
   }, [isMobile, isLandscape, showVideo]);
@@ -214,7 +303,38 @@ export default function VideoPage() {
     }
   }, [isMobile, isLandscape]);
 
+  useEffect(() => {
+    if (!isMobile) {
+      const initDesktopVideo = () => {
+        const wistiaWindow = window as Window & {
+          Wistia?: {
+            api: (id: string) => {
+              play: () => void;
+              pause: () => void;
+            };
+          };
+        };
+        if (wistiaWindow.Wistia) {
+          const video = wistiaWindow.Wistia.api("avj1qhbupb");
+          if (video) {
+            console.log("Desktop: Wistia video found, attempting to play...");
+            try {
+              video.play();
+            } catch (err) {
+              console.log("Desktop: Autoplay failed, user interaction required:", err);
+            }
+          }
+        } else {
+          setTimeout(initDesktopVideo, 500);
+        }
+      };
+
+      setTimeout(initDesktopVideo, 1000);
+    }
+  }, [isMobile]);
+
   if (!isMobile) {
+    console.log("Desktop mode - rendering video");
     return (
       <div className="min-h-screen bg-black">
         <div
