@@ -16,6 +16,10 @@ export default function VideoPage() {
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
 
   const simulateFullscreenClick = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    
     console.log("Simulating fullscreen click...");
     
     if (fullscreenButtonRef.current) {
@@ -58,7 +62,6 @@ export default function VideoPage() {
     }
   };
 
-
   const toggleFullscreen = (
     videoElement: HTMLVideoElement & {
       mozRequestFullScreen?: () => void;
@@ -66,7 +69,7 @@ export default function VideoPage() {
       webkitEnterFullscreen?: () => void;
     }
   ) => {
-    if(typeof window === 'undefined') {
+    if(typeof window === 'undefined' || typeof document === 'undefined') {
         return;
     }
     
@@ -95,25 +98,6 @@ export default function VideoPage() {
       // Enter fullscreen
       console.log("Entering fullscreen...");
 
-      // Try Wistia API first
-      //   const wistiaWindow = window as Window & {
-      //     Wistia?: {
-      //       api: (id: string) => {
-      //         requestFullscreen: () => void;
-      //       };
-      //     };
-      //   };
-
-      //   if (wistiaWindow.Wistia) {
-      //     const video = wistiaWindow.Wistia.api("avj1qhbupb");
-      //     if (video && video.requestFullscreen) {
-      //       console.log("Using Wistia API for fullscreen");
-      //       video.requestFullscreen();
-      //       setIsFullscreen(true);
-      //       return;
-      //     }
-      //   }
-
       // Fallback: try native fullscreen
       if (videoElement.requestFullscreen) {
         videoElement
@@ -131,6 +115,10 @@ export default function VideoPage() {
   };
 
   const stopVideo = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    
     const wistiaWindow = window as Window & {
       Wistia?: { api: (id: string) => { pause: () => void; play: () => void } };
     };
@@ -163,7 +151,7 @@ export default function VideoPage() {
 
   useEffect(() => {
     const loadWistiaScript = () => {
-        if(typeof window === 'undefined') {
+        if(typeof window === 'undefined' || typeof document === 'undefined') {
             return;
         }
         
@@ -200,6 +188,10 @@ export default function VideoPage() {
     };
 
     const checkMobile = () => {
+      if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+        return;
+      }
+      
       const userAgent =
         navigator.userAgent ||
         navigator.vendor ||
@@ -213,6 +205,10 @@ export default function VideoPage() {
     };
 
     const checkOrientation = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       const isLandscapeOrientation = window.innerWidth > window.innerHeight;
       console.log("Orientation check:", {
         width: window.innerWidth,
@@ -246,16 +242,15 @@ export default function VideoPage() {
       checkOrientation();
     };
 
-    window.addEventListener("orientationchange", handleOrientationChange);
-    window.addEventListener("resize", handleResize);
+    if (typeof window !== 'undefined') {
+      window.addEventListener("orientationchange", handleOrientationChange);
+      window.addEventListener("resize", handleResize);
 
-    // Use only orientationchange and resize events for better compatibility
-    // Device orientation requires user permission and can cause warnings
-
-    return () => {
-      window.removeEventListener("orientationchange", handleOrientationChange);
-      window.removeEventListener("resize", handleResize);
-    };
+      return () => {
+        window.removeEventListener("orientationchange", handleOrientationChange);
+        window.removeEventListener("resize", handleResize);
+      };
+    }
   }, [isMobile]);
 
   useEffect(() => {
@@ -263,6 +258,10 @@ export default function VideoPage() {
       console.log("Mobile landscape detected, initializing video...");
 
       const initVideo = () => {
+        if (typeof window === 'undefined') {
+          return;
+        }
+        
         const wistiaWindow = window as Window & {
           Wistia?: {
             api: (id: string) => {
@@ -290,7 +289,7 @@ export default function VideoPage() {
 
             // Wait for video element and handle fullscreen
             const waitForVideoElement = () => {
-                if(typeof window === 'undefined') {
+                if(typeof window === 'undefined' || typeof document === 'undefined') {
                     return;
                 }
                 
@@ -376,6 +375,10 @@ export default function VideoPage() {
   useEffect(() => {
     if (!isMobile) {
       const initDesktopVideo = () => {
+        if (typeof window === 'undefined') {
+          return;
+        }
+        
         const wistiaWindow = window as Window & {
           Wistia?: {
             api: (id: string) => {
@@ -409,12 +412,16 @@ export default function VideoPage() {
   // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {        
+      if (typeof document === 'undefined') {
+        return;
+      }
+      
       if (!document.fullscreenElement) {
         setIsFullscreen(false);
       }
     };
 
-    if(typeof window === 'undefined') {
+    if(typeof window === 'undefined' || typeof document === 'undefined') {
         return;
     }
 
@@ -499,6 +506,10 @@ export default function VideoPage() {
         <button
             ref={fullscreenButtonRef}
           onClick={() => {
+            if (typeof window === 'undefined') {
+              return;
+            }
+            
             const wistiaWindow = window as Window & {
               Wistia?: {
                 api: (id: string) => {
