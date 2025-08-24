@@ -2,60 +2,37 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
-import { Maximize, Minimize } from "lucide-react";
+import { Maximize, Minimize, X } from "lucide-react";
 
 import "./style.css";
-import { domEvent } from "dom-event-simulate";
 
 export default function VideoPageComponent() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFakeFullscreen, setIsFakeFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
 
-  const simulateFullscreenClick = () => {
-    console.log("Simulating fullscreen click...");
-    
-    if (fullscreenButtonRef.current) {
-      const button = fullscreenButtonRef.current;
-      const rect = button.getBoundingClientRect();
-      
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      console.log("Button coordinates:", { centerX, centerY, rect });
-      
-      // Simulate mouse/touch events
-      try {
-        // Simulate mousedown
-        domEvent(button, 'mousedown', {
-          clientX: centerX,
-          clientY: centerY,
-        });
-        
-        // Simulate mouseup (click)
-        domEvent(button, 'mouseup', {
-          clientX: centerX,
-          clientY: centerY,
-        });
-        
-        // Simulate click
-        domEvent(button, 'click', {
-          clientX: centerX,
-          clientY: centerY,
-        });
-        domEvent(button, 'touchstart', {
-          clientX: centerX,
-          clientY: centerY,
-        });
-        
-        console.log("Click simulation completed");
-      } catch (error) {
-        console.log("Click simulation failed:", error);
-      }
+  const tryMinimizeBars = () => {
+    // iOS retrai a barra após um "scroll" pequeno; precisa ocorrer após um gesto real
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // pequeno atraso para o Safari recalcular a viewport
+      setTimeout(() => window.scrollTo(0, 1), 200);
     }
+  };
+
+  const enterFakeFullscreen = () => {
+    console.log("Entering fake fullscreen...");
+    setIsFakeFullscreen(true);
+    tryMinimizeBars();
+  };
+
+  const exitFakeFullscreen = () => {
+    console.log("Exiting fake fullscreen...");
+    setIsFakeFullscreen(false);
   };
 
   const toggleFullscreen = (
@@ -65,7 +42,7 @@ export default function VideoPageComponent() {
       webkitEnterFullscreen?: () => void;
     }
   ) => {
-    if (isFullscreen) {
+    if (isFullscreen || isFakeFullscreen) {
       // Exit fullscreen
       console.log("Exiting fullscreen...");
       if (document.exitFullscreen) {
@@ -86,23 +63,35 @@ export default function VideoPageComponent() {
         ).webkitExitFullscreen?.();
       }
       setIsFullscreen(false);
+      setIsFakeFullscreen(false);
     } else {
-      // Enter fullscreen
+      // Try real fullscreen first, fallback to fake fullscreen
       console.log("Entering fullscreen...");
 
-      // Fallback: try native fullscreen
       if (videoElement.requestFullscreen) {
         videoElement
           .requestFullscreen()
-          .catch(err => console.log("Fullscreen error:", err));
+          .then(() => {
+            setIsFullscreen(true);
+            console.log("Real fullscreen successful");
+          })
+          .catch(err => {
+            console.log("Real fullscreen failed, using fake fullscreen:", err);
+            enterFakeFullscreen();
+          });
       } else if (videoElement.mozRequestFullScreen) {
         videoElement.mozRequestFullScreen();
+        setIsFullscreen(true);
       } else if (videoElement.webkitRequestFullscreen) {
         videoElement.webkitRequestFullscreen();
+        setIsFullscreen(true);
       } else if (videoElement.webkitEnterFullscreen) {
         videoElement.webkitEnterFullscreen();
+        setIsFullscreen(true);
+      } else {
+        // Fallback to fake fullscreen
+        enterFakeFullscreen();
       }
-      setIsFullscreen(true);
     }
   };
 
@@ -249,8 +238,9 @@ export default function VideoPageComponent() {
             // First, try to play via Wistia API
             try {
               video.play();
+              // Auto enter fake fullscreen after play
               setTimeout(() => {
-                simulateFullscreenClick();
+                enterFakeFullscreen();
               }, 1000);
               console.log("Play command sent to Wistia");
             } catch (err) {
@@ -396,6 +386,38 @@ export default function VideoPageComponent() {
     };
   }, []);
 
+  // Fake Fullscreen Overlay
+  if (isFakeFullscreen) {
+    return (
+      <div className="overlay">
+        <div
+          id="wistia-video-fake-fullscreen"
+          className="wistia_embed wistia_async_avj1qhbupb"
+          style={{
+            width: "100dvw",
+            height: "100dvh",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            display: "block",
+            border: "0",
+          }}
+          data-autoplay="true"
+          data-muted="false"
+          data-video-foam="true"
+          data-fitStrategy="cover"
+          data-playsinline="true"
+          data-webkit-playsinline="true"
+        />
+        <button
+          onClick={exitFakeFullscreen}
+          className="close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+    );
+  }
+
   if (!isMobile) {
     console.log("Desktop mode - rendering video");
     return (
@@ -477,10 +499,13 @@ export default function VideoPageComponent() {
                 return;
               }
             }
+            
+            // Fallback to fake fullscreen
+            enterFakeFullscreen();
           }}
           className="absolute top-4 left-4 z-50 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all duration-200"
         >
-          {isFullscreen ? <Minimize /> : <Maximize />}
+          {isFullscreen || isFakeFullscreen ? <Minimize /> : <Maximize />}
         </button>
       </div>
     );
