@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
-import { Maximize, Minimize } from "lucide-react";
+import { Maximize, Minimize, Play } from "lucide-react";
 
 import "./style.css";
 
@@ -18,6 +18,7 @@ export default function VideoPageComponent() {
     typeof navigator !== "undefined" &&
     /iP(hone|od|ad)/.test(navigator.userAgent);
 
+  // pega o <video> real que o Wistia injeta (ex.: #wistia_simple_video_97)
   function getWistiaVideoEl():
     | (HTMLVideoElement & {
         webkitEnterFullscreen?: () => void;
@@ -28,15 +29,17 @@ export default function VideoPageComponent() {
     return document.querySelector('video[id^="wistia_simple_video_"]');
   }
 
-  function enterNativeFullscreenFromGesture(): boolean {
+  function playAndEnterFullscreenFromGesture(): boolean {
     const vid = getWistiaVideoEl();
     if (!vid) return false;
 
     try {
+      // tudo DENTRO do mesmo clique (sem await/then/setTimeout)
       if (vid.muted) vid.muted = false;
       if (vid.paused) vid.play(); // sem await
 
       if (isiOS && typeof vid.webkitEnterFullscreen === "function") {
+        // iPhone: player nativo => barra do Safari some 100%
         vid.webkitEnterFullscreen();
         return true;
       }
@@ -53,7 +56,7 @@ export default function VideoPageComponent() {
         return true;
       }
     } catch (e) {
-      console.warn("Fullscreen nativo falhou:", e);
+      console.warn("Play+Fullscreen nativo falhou:", e);
     }
     return false;
   }
@@ -248,7 +251,7 @@ export default function VideoPageComponent() {
 
             // First, try to play via Wistia API
             try {
-              video.play();
+              //   video.play();
               console.log("Play command sent to Wistia");
             } catch (err) {
               console.log("Wistia play failed:", err);
@@ -285,7 +288,7 @@ export default function VideoPageComponent() {
                 // Try to play the video element directly
                 if (videoElement.paused) {
                   console.log("Video is paused, attempting to play...");
-                  videoElement.play();
+                  //   videoElement.play();
                 } else {
                   // Video is already playing, enter fullscreen
                   setTimeout(() => {
@@ -351,7 +354,7 @@ export default function VideoPageComponent() {
           if (video) {
             console.log("Desktop: Wistia video found, attempting to play...");
             try {
-              video.play();
+              //   video.play();
             } catch (err) {
               console.log(
                 "Desktop: Autoplay failed, user interaction required:",
@@ -454,32 +457,61 @@ export default function VideoPageComponent() {
         />
 
         <button
-          ref={fullscreenButtonRef}
           onClick={() => {
-            if (enterNativeFullscreenFromGesture()) {
+            // 1) tenta no <video> real (melhor para iPhone)
+            if (playAndEnterFullscreenFromGesture()) {
               setIsFullscreen(true);
               return;
             }
 
+            // 2) tenta API do Wistia (funciona bem em desktop/Android)
             const wistiaWindow = window as Window & {
               Wistia?: {
-                api: (id: string) => { requestFullscreen?: () => void };
+                api: (id: string) => {
+                  play?: () => void;
+                  requestFullscreen?: () => void;
+                };
               };
             };
             const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
-            if (wv?.requestFullscreen) {
-              try {
-                wv.requestFullscreen();
-                setIsFullscreen(true);
-                return;
-              } catch (e) {
-                console.warn("Wistia.requestFullscreen falhou:", e);
-              }
+            try {
+              // tocar e ir pra FS dentro do mesmo gesto
+              wv?.play?.();
+              wv?.requestFullscreen?.();
+              setIsFullscreen(true);
+              return;
+            } catch (e) {
+              console.warn("Wistia play/requestFullscreen falhou:", e);
             }
           }}
-          className="absolute top-4 left-4 z-50 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all duration-200"
+          className="absolute w-full top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/90 transition"
         >
-          {isFullscreen ? <Minimize /> : <Maximize />}
+          {/* <svg
+            x="0px"
+            y="0px"
+            viewBox="0 0 125 80"
+            enable-background="new 0 0 125 80"
+            aria-hidden="true"
+            style={{
+              fill: "rgb(255, 255, 255)",
+              height: "88.3333px",
+              left: "0px",
+              strokeWidth: "0px",
+              top: "0px",
+              width: "100%",
+              position: "absolute",
+            }}
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              fill="#FFFFFF"
+              opacity="1"
+              transform="translate(44, 22)"
+              d="M12.138 2.173C10.812 1.254 9 2.203 9 3.817v28.366c0 1.613 1.812 2.563 3.138 1.644l20.487-14.183a2 2 0 0 0 0-3.288L12.138 2.173Z"
+            ></path>
+          </svg> */}
+          Click and feel the experience
         </button>
       </div>
     );

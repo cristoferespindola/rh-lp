@@ -86,6 +86,10 @@
   }
 }
 
+.w-big-play-button {
+    display: none !important;
+}
+
 /* Fake Fullscreen Styles */
 html, body { 
   margin: 0; 
@@ -114,7 +118,7 @@ html, body {
     justify-content: center;
   }
 
-  
+
 
 .close {
   position: fixed; 
