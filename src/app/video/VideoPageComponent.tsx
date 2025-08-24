@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
-import { Maximize, Minimize, X } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
 
 import "./style.css";
 
@@ -11,29 +11,52 @@ export default function VideoPageComponent() {
   const [isLandscape, setIsLandscape] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isFakeFullscreen, setIsFakeFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
 
-  const tryMinimizeBars = () => {
-    // iOS retrai a barra após um "scroll" pequeno; precisa ocorrer após um gesto real
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      // pequeno atraso para o Safari recalcular a viewport
-      setTimeout(() => window.scrollTo(0, 1), 200);
+  const isiOS =
+    typeof navigator !== "undefined" &&
+    /iP(hone|od|ad)/.test(navigator.userAgent);
+
+  function getWistiaVideoEl():
+    | (HTMLVideoElement & {
+        webkitEnterFullscreen?: () => void;
+        webkitRequestFullscreen?: () => void;
+        mozRequestFullScreen?: () => void;
+      })
+    | null {
+    return document.querySelector('video[id^="wistia_simple_video_"]');
+  }
+
+  function enterNativeFullscreenFromGesture(): boolean {
+    const vid = getWistiaVideoEl();
+    if (!vid) return false;
+
+    try {
+      if (vid.muted) vid.muted = false;
+      if (vid.paused) vid.play(); // sem await
+
+      if (isiOS && typeof vid.webkitEnterFullscreen === "function") {
+        vid.webkitEnterFullscreen();
+        return true;
+      }
+      if (typeof vid.requestFullscreen === "function") {
+        vid.requestFullscreen();
+        return true;
+      }
+      if (typeof vid.webkitRequestFullscreen === "function") {
+        vid.webkitRequestFullscreen();
+        return true;
+      }
+      if (typeof vid.mozRequestFullScreen === "function") {
+        vid.mozRequestFullScreen();
+        return true;
+      }
+    } catch (e) {
+      console.warn("Fullscreen nativo falhou:", e);
     }
-  };
-
-  const enterFakeFullscreen = () => {
-    console.log("Entering fake fullscreen...");
-    setIsFakeFullscreen(true);
-    tryMinimizeBars();
-  };
-
-  const exitFakeFullscreen = () => {
-    console.log("Exiting fake fullscreen...");
-    setIsFakeFullscreen(false);
-  };
+    return false;
+  }
 
   const toggleFullscreen = (
     videoElement: HTMLVideoElement & {
@@ -42,7 +65,7 @@ export default function VideoPageComponent() {
       webkitEnterFullscreen?: () => void;
     }
   ) => {
-    if (isFullscreen || isFakeFullscreen) {
+    if (isFullscreen) {
       // Exit fullscreen
       console.log("Exiting fullscreen...");
       if (document.exitFullscreen) {
@@ -63,35 +86,23 @@ export default function VideoPageComponent() {
         ).webkitExitFullscreen?.();
       }
       setIsFullscreen(false);
-      setIsFakeFullscreen(false);
     } else {
-      // Try real fullscreen first, fallback to fake fullscreen
+      // Enter fullscreen
       console.log("Entering fullscreen...");
 
+      // Fallback: try native fullscreen
       if (videoElement.requestFullscreen) {
         videoElement
           .requestFullscreen()
-          .then(() => {
-            setIsFullscreen(true);
-            console.log("Real fullscreen successful");
-          })
-          .catch(err => {
-            console.log("Real fullscreen failed, using fake fullscreen:", err);
-            enterFakeFullscreen();
-          });
+          .catch(err => console.log("Fullscreen error:", err));
       } else if (videoElement.mozRequestFullScreen) {
         videoElement.mozRequestFullScreen();
-        setIsFullscreen(true);
       } else if (videoElement.webkitRequestFullscreen) {
         videoElement.webkitRequestFullscreen();
-        setIsFullscreen(true);
       } else if (videoElement.webkitEnterFullscreen) {
         videoElement.webkitEnterFullscreen();
-        setIsFullscreen(true);
-      } else {
-        // Fallback to fake fullscreen
-        enterFakeFullscreen();
       }
+      setIsFullscreen(true);
     }
   };
 
@@ -238,10 +249,6 @@ export default function VideoPageComponent() {
             // First, try to play via Wistia API
             try {
               video.play();
-              // Auto enter fake fullscreen after play
-              setTimeout(() => {
-                enterFakeFullscreen();
-              }, 1000);
               console.log("Play command sent to Wistia");
             } catch (err) {
               console.log("Wistia play failed:", err);
@@ -361,9 +368,8 @@ export default function VideoPageComponent() {
     }
   }, [isMobile]);
 
-  // Listen for fullscreen changes
   useEffect(() => {
-    const handleFullscreenChange = () => {        
+    const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
         setIsFullscreen(false);
       }
@@ -385,38 +391,6 @@ export default function VideoPageComponent() {
       );
     };
   }, []);
-
-  // Fake Fullscreen Overlay
-  if (isFakeFullscreen) {
-    return (
-      <div className="overlay">
-        <div
-          id="wistia-video-fake-fullscreen"
-          className="wistia_embed wistia_async_avj1qhbupb"
-          style={{
-            width: "100dvw",
-            height: "100dvh",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            display: "block",
-            border: "0",
-          }}
-          data-autoplay="true"
-          data-muted="false"
-          data-video-foam="true"
-          data-fitStrategy="cover"
-          data-playsinline="true"
-          data-webkit-playsinline="true"
-        />
-        <button
-          onClick={exitFakeFullscreen}
-          className="close"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-    );
-  }
 
   if (!isMobile) {
     console.log("Desktop mode - rendering video");
@@ -480,32 +454,32 @@ export default function VideoPageComponent() {
         />
 
         <button
-            ref={fullscreenButtonRef}
+          ref={fullscreenButtonRef}
           onClick={() => {
+            if (enterNativeFullscreenFromGesture()) {
+              setIsFullscreen(true);
+              return;
+            }
+
             const wistiaWindow = window as Window & {
               Wistia?: {
-                api: (id: string) => {
-                  requestFullscreen: () => void;
-                };
+                api: (id: string) => { requestFullscreen?: () => void };
               };
             };
-
-            if (wistiaWindow.Wistia) {
-              const video = wistiaWindow.Wistia.api("avj1qhbupb");
-              if (video && video.requestFullscreen) {
-                console.log("Using Wistia API for fullscreen");
-                video.requestFullscreen();
+            const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
+            if (wv?.requestFullscreen) {
+              try {
+                wv.requestFullscreen();
                 setIsFullscreen(true);
                 return;
+              } catch (e) {
+                console.warn("Wistia.requestFullscreen falhou:", e);
               }
             }
-            
-            // Fallback to fake fullscreen
-            enterFakeFullscreen();
           }}
           className="absolute top-4 left-4 z-50 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all duration-200"
         >
-          {isFullscreen || isFakeFullscreen ? <Minimize /> : <Maximize />}
+          {isFullscreen ? <Minimize /> : <Maximize />}
         </button>
       </div>
     );
