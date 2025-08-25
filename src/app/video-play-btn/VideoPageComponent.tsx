@@ -13,7 +13,7 @@ export default function VideoPageComponent() {
   const [isLandscape, setIsLandscape] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [visibleHotspots, setVisibleHotspots] = useState<string[]>([]);
+  const [showHotspots, setShowHotspots] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +32,6 @@ export default function VideoPageComponent() {
 
   function playAndEnterFullscreenFromGesture(): boolean {
     const vid = getWistiaVideoEl();
-    const parent = containerRef.current;
     if (!vid) return false;
 
     try {
@@ -40,19 +39,19 @@ export default function VideoPageComponent() {
       if (vid.paused) vid.play();
       setIsPlaying(true);
       if (isiOS && typeof vid.webkitEnterFullscreen === "function") {
-        parent?.webkitEnterFullscreen();
+        vid.webkitEnterFullscreen();
         return true;
       }
       if (typeof vid.requestFullscreen === "function") {
-        parent?.requestFullscreen();
+        vid.requestFullscreen();
         return true;
       }
       if (typeof vid.webkitRequestFullscreen === "function") {
-        parent?.webkitRequestFullscreen();
+        vid.webkitRequestFullscreen();
         return true;
       }
       if (typeof vid.mozRequestFullScreen === "function") {
-        parent?.mozRequestFullScreen();
+        vid.mozRequestFullScreen();
         return true;
       }
     } catch (e) {
@@ -154,10 +153,7 @@ export default function VideoPageComponent() {
               id: string;
               onReady: (video: {
                 requestFullscreen: () => void;
-                bind: (
-                  event: string,
-                  callback: (data?: number) => void
-                ) => void;
+                bind: (event: string, callback: () => void) => void;
               }) => void;
             }>;
           };
@@ -173,39 +169,8 @@ export default function VideoPageComponent() {
                   }
                 ).wistiaVideo = video;
 
-                // Bind to secondchange event to show hotspots progressively
-                video.bind("secondchange", (seconds?: number) => {
-                  if (seconds === undefined) return;
-                  console.log("Video second changed:", seconds);
-
-                  // Convert time to seconds (e.g., 2.30 = 2 minutes 30 seconds = 150 seconds)
-                  const hotspot1Time = 2 * 60 + 30; // 2:30 = 150 seconds
-                  const hotspot2Time = 2 * 60 + 37; // 2:37 = 157 seconds
-                  const hotspot3Time = 2 * 60 + 40; // 2:40 = 160 seconds
-
-                  if (
-                    seconds >= hotspot1Time &&
-                    !visibleHotspots.includes("hotspot-1")
-                  ) {
-                    console.log("Showing hotspot 1 at", seconds, "seconds");
-                    setVisibleHotspots(prev => [...prev, "hotspot-1"]);
-                  }
-
-                  if (
-                    seconds >= hotspot2Time &&
-                    !visibleHotspots.includes("hotspot-2")
-                  ) {
-                    console.log("Showing hotspot 2 at", seconds, "seconds");
-                    setVisibleHotspots(prev => [...prev, "hotspot-2"]);
-                  }
-
-                  if (
-                    seconds >= hotspot3Time &&
-                    !visibleHotspots.includes("hotspot-3")
-                  ) {
-                    console.log("Showing hotspot 3 at", seconds, "seconds");
-                    setVisibleHotspots(prev => [...prev, "hotspot-3"]);
-                  }
+                video.bind("end", () => {
+                  setShowHotspots(true);
                 });
               },
             });
@@ -294,7 +259,7 @@ export default function VideoPageComponent() {
 
             // First, try to play via Wistia API
             try {
-              //   video.muted = true;
+              video.muted = true;
               // video.play();
               console.log("Play command sent to Wistia");
             } catch (err) {
@@ -390,7 +355,7 @@ export default function VideoPageComponent() {
             api: (id: string) => {
               play: () => void;
               pause: () => void;
-              bind: (event: string, callback: (data?: number) => void) => void;
+              bind: (event: string, callback: () => void) => void;
             };
           };
         };
@@ -399,51 +364,14 @@ export default function VideoPageComponent() {
           if (video) {
             console.log("Desktop: Wistia video found, attempting to play...");
             try {
-              // Bind to secondchange event to show hotspots progressively
-              video.bind("secondchange", (seconds?: number) => {
-                if (seconds === undefined) return;
-                console.log("Desktop: Video second changed:", seconds);
-
-                // Convert time to seconds (e.g., 2.30 = 2 minutes 30 seconds = 150 seconds)
-                const hotspot1Time = 2 * 60 + 34; // 2:30 = 150 seconds
-                const hotspot2Time = 2 * 60 + 37; // 2:37 = 157 seconds
-                const hotspot3Time = 2 * 60 + 40; // 2:40 = 160 seconds
-
-                if (
-                  seconds >= hotspot1Time &&
-                  !visibleHotspots.includes("hotspot-1")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 1 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-1"]);
-                }
-
-                if (
-                  seconds >= hotspot2Time &&
-                  !visibleHotspots.includes("hotspot-2")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 2 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-2"]);
-                }
-
-                if (
-                  seconds >= hotspot3Time &&
-                  !visibleHotspots.includes("hotspot-3")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 3 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-3"]);
-                }
+              video.bind("play", () => {
+                console.log("Desktop: Video playing");
+                setIsPlaying(true);
+              });
+              video.bind("end", () => {
+                console.log("Desktop: Video ended, showing hotspots");
+                setShowHotspots(true);
+                console.log("showHotspots state set to true");
               });
             } catch (err) {
               console.log(
@@ -486,8 +414,8 @@ export default function VideoPageComponent() {
   }, []);
 
   useEffect(() => {
-    console.log("visibleHotspots state changed:", visibleHotspots);
-  }, [visibleHotspots]);
+    console.log("showHotspots state changed:", showHotspots);
+  }, [showHotspots]);
 
   if (!isMobile) {
     console.log("Desktop mode - rendering video");
@@ -504,10 +432,9 @@ export default function VideoPageComponent() {
           data-autoplay="true"
           data-muted="false"
           data-video-foam="true"
-          data-fitStrategy="fill"
+          data-fitStrategy="cover"
         >
           <VideoOverlayActions
-            visibleHotspots={visibleHotspots}
             containerId="wistia-hotspots-desktop"
           />
         </div>
@@ -542,7 +469,6 @@ export default function VideoPageComponent() {
         ref={containerRef}
       >
         <VideoOverlayActions
-          visibleHotspots={visibleHotspots}
           containerId="wistia-video-mobile-fullscreen"
         />
         <div
@@ -556,64 +482,63 @@ export default function VideoPageComponent() {
           data-autoplay="true"
           data-muted="false"
           data-video-foam="true"
-          data-fitStrategy="fill"
+          data-fitStrategy="cover"
           data-playsinline="true"
           data-webkit-playsinline="true"
         />
 
         {!isPlaying ? (
           <button
-            onClick={() => {
-              if (playAndEnterFullscreenFromGesture()) {
-                setIsFullscreen(true);
-                return;
-              }
+          onClick={() => {
+            if (playAndEnterFullscreenFromGesture()) {
+              setIsFullscreen(true);
+              return;
+            }
 
-              const wistiaWindow = window as Window & {
-                Wistia?: {
-                  api: (id: string) => {
-                    play?: () => void;
-                    requestFullscreen?: () => void;
-                  };
+            const wistiaWindow = window as Window & {
+              Wistia?: {
+                api: (id: string) => {
+                  play?: () => void;
+                  requestFullscreen?: () => void;
                 };
               };
-              const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
-              try {
-                wv?.play?.();
-                containerRef.current?.requestFullscreen();
-                setIsFullscreen(true);
-                setIsPlaying(true);
-                return;
-              } catch (e) {
-                console.warn("Wistia play/requestFullscreen falhou:", e);
-              }
+            };
+            const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
+            try {
+              wv?.play?.();
+              containerRef.current?.requestFullscreen();
+              setIsFullscreen(true);
+              return;
+            } catch (e) {
+              console.warn("Wistia play/requestFullscreen falhou:", e);
+            }
+          }}
+          className="absolute w-full top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/90 transition"
+        >
+          <svg
+            x="0px"
+            y="0px"
+            viewBox="0 0 125 80"
+            enable-background="new 0 0 125 80"
+            aria-hidden="true"
+            style={{
+              fill: "rgb(255, 255, 255)",
+              height: "88.3333px",
+              left: "0px",
+              strokeWidth: "0px",
+              top: "0px",
+              width: "100%",
+              position: "absolute",
             }}
-            className="absolute w-16 h-16 top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/90 transition"
           >
-            <svg
-              x="0px"
-              y="0px"
-              viewBox="0 0 125 80"
-              enable-background="new 0 0 125 80"
-              aria-hidden="true"
-              style={{
-                fill: "rgb(255, 255, 255)",
-                height: "88.3333px",
-                left: "0px",
-                strokeWidth: "0px",
-                top: "0px",
-                width: "100%",
-                position: "absolute",
-              }}
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                fill="#FFFFFF"
-                opacity="1"
-                transform="translate(44, 22)"
-                d="M12.138 2.173C10.812 1.254 9 2.203 9 3.817v28.366c0 1.613 1.812 2.563 3.138 1.644l20.487-14.183a2 2 0 0 0 0-3.288L12.138 2.173Z"
-              ></path>
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              fill="#FFFFFF"
+              opacity="1"
+              transform="translate(44, 22)"
+              d="M12.138 2.173C10.812 1.254 9 2.203 9 3.817v28.366c0 1.613 1.812 2.563 3.138 1.644l20.487-14.183a2 2 0 0 0 0-3.288L12.138 2.173Z"
+            ></path>
             </svg>
           </button>
         ) : null}

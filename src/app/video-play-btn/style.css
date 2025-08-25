@@ -22,16 +22,14 @@
   height: 100dvh !important;
   background-color: #000 !important; /* Added for desktop */
 }
-/* Force fill on all Wistia video elements */
-video {
+.wistia_embed iframe {
   width: 100% !important;
   height: 100% !important;
   object-fit: fill !important;
-  object-position: center !important;
 }
-
-/* Override any Wistia inline styles */
-.wistia_embed * {
+.wistia_embed video {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: fill !important;
 }
 
