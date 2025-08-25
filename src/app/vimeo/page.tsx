@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
 import VideoActions from "@/components/videoActions";
 import StaticTurnOn from "@/components/video/StaticTurnOn";
 
