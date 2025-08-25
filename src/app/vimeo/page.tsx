@@ -43,6 +43,12 @@ export default function VimeoPage() {
     }
   };
 
+  const requestCloseFullscreen = async () => {
+    if (document.exitFullscreen) {
+      await document.exitFullscreen();
+    }
+  };
+
   const showRotateIfNeeded = useCallback(() => {
     const mobile = isMobileish();
     const portrait = isPortrait();
@@ -96,8 +102,10 @@ export default function VimeoPage() {
           if (!ctaShown && data.seconds >= CTA_TIME_SECONDS) {
             setCtaShown(true);
             setShowCTA(true);
+            requestCloseFullscreen();
             // Pause the video at 2:30
             vimeoPlayer.pause().catch(() => {});
+
           }
         });
 
