@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
 import VideoOverlayActions from "@/components/videoOverlayActions";
+import VideoActions from "@/components/videoActions";
 
 import "./style.css";
 import StaticTurnOn from "@/components/video/StaticTurnOn";
@@ -20,6 +21,8 @@ export default function VideoPageComponent() {
   const [showVideo, setShowVideo] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [visibleHotspots, setVisibleHotspots] = useState<string[]>([]);
+  const [showVideoActions, setShowVideoActions] = useState(false);
+  const [videoActionsShown, setVideoActionsShown] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<VideoWrapper>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -161,6 +164,7 @@ export default function VideoPageComponent() {
               id: string;
               onReady: (video: {
                 requestFullscreen: () => void;
+                pause: () => void;
                 bind: (
                   event: string,
                   callback: (data?: number) => void
@@ -180,7 +184,7 @@ export default function VideoPageComponent() {
                   }
                 ).wistiaVideo = video;
 
-                // Bind to secondchange event to show hotspots progressively
+                // Bind to secondchange event to show hotspots progressively and VideoActions
                 video.bind("secondchange", (seconds?: number) => {
                   if (seconds === undefined) return;
                   console.log("Video second changed:", seconds);
@@ -189,6 +193,7 @@ export default function VideoPageComponent() {
                   const hotspot1Time = 2 * 60 + 30; // 2:30 = 150 seconds
                   const hotspot2Time = 2 * 60 + 37; // 2:37 = 157 seconds
                   const hotspot3Time = 2 * 60 + 40; // 2:40 = 160 seconds
+                  const videoActionsTime = 2 * 60 + 30; // 2:30 = 150 seconds
 
                   if (
                     seconds >= hotspot1Time &&
@@ -212,6 +217,15 @@ export default function VideoPageComponent() {
                   ) {
                     console.log("Showing hotspot 3 at", seconds, "seconds");
                     setVisibleHotspots(prev => [...prev, "hotspot-3"]);
+                  }
+
+                  // Show VideoActions at 2:30
+                  if (seconds >= videoActionsTime && !videoActionsShown) {
+                    console.log("Showing VideoActions at", seconds, "seconds");
+                    setVideoActionsShown(true);
+                    setShowVideoActions(true);
+                    // Pause the video at 2:30
+                    video.pause();
                   }
                 });
               },
@@ -406,7 +420,7 @@ export default function VideoPageComponent() {
           if (video) {
             console.log("Desktop: Wistia video found, attempting to play...");
             try {
-              // Bind to secondchange event to show hotspots progressively
+              // Bind to secondchange event to show hotspots progressively and VideoActions
               video.bind("secondchange", (seconds?: number) => {
                 if (seconds === undefined) return;
                 console.log("Desktop: Video second changed:", seconds);
@@ -415,6 +429,7 @@ export default function VideoPageComponent() {
                 const hotspot1Time = 2 * 60 + 34; // 2:30 = 150 seconds
                 const hotspot2Time = 2 * 60 + 37; // 2:37 = 157 seconds
                 const hotspot3Time = 2 * 60 + 40; // 2:40 = 160 seconds
+                const videoActionsTime = 2 * 60 + 30; // 2:30 = 150 seconds
 
                 if (
                   seconds >= hotspot1Time &&
@@ -450,6 +465,15 @@ export default function VideoPageComponent() {
                     "seconds"
                   );
                   setVisibleHotspots(prev => [...prev, "hotspot-3"]);
+                }
+
+                // Show VideoActions at 2:30
+                if (seconds >= videoActionsTime && !videoActionsShown) {
+                  console.log("Desktop: Showing VideoActions at", seconds, "seconds");
+                  setVideoActionsShown(true);
+                  setShowVideoActions(true);
+                  // Pause the video at 2:30
+                  video.pause();
                 }
               });
             } catch (err) {
@@ -518,6 +542,20 @@ export default function VideoPageComponent() {
             containerId="wistia-hotspots-desktop"
           />
         </div>
+        
+        {/* VideoActions Modal */}
+        {showVideoActions && (
+          <div 
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowVideoActions(false);
+              }
+            }}
+          >
+            <VideoActions onClose={() => setShowVideoActions(false)} />
+          </div>
+        )}
       </div>
     );
   }
@@ -624,6 +662,20 @@ export default function VideoPageComponent() {
             </svg>
           </button>
         ) : null}
+        
+        {/* VideoActions Modal */}
+        {showVideoActions && (
+          <div 
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowVideoActions(false);
+              }
+            }}
+          >
+            <VideoActions onClose={() => setShowVideoActions(false)} />
+          </div>
+        )}
       </div>
     );
   }

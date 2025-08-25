@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
-import { X } from "lucide-react";
+import VideoActions from "@/components/videoActions";
 
 export default function VimeoPage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -11,10 +11,10 @@ export default function VimeoPage() {
   const [showCTA, setShowCTA] = useState(false);
   const [ctaShown, setCtaShown] = useState(false);
   const playerRef = useRef<HTMLIFrameElement>(null);
-  const [player, setPlayer] = useState<any>(null);
+  const [player, setPlayer] = useState<{ pause: () => Promise<void>; play: () => Promise<void>; requestFullscreen?: () => Promise<void>; on: (event: string, callback: (data: { seconds: number }) => void) => void } | null>(null);
 
   const MOBILE_MAX_WIDTH = 1024;
-  const CTA_TIME_SECONDS = 151; // 2:31
+  const CTA_TIME_SECONDS = 150; // 2:30
 
   const tryMinimizeBars = () => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -86,11 +86,13 @@ export default function VimeoPage() {
         const vimeoPlayer = new window.Vimeo.Player(playerRef.current);
         setPlayer(vimeoPlayer);
 
-        // Listen for timeupdate to show CTA
+        // Listen for timeupdate to show CTA and pause video
         vimeoPlayer.on('timeupdate', (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= CTA_TIME_SECONDS) {
             setCtaShown(true);
             setShowCTA(true);
+            // Pause the video at 2:30
+            vimeoPlayer.pause().catch(() => {});
           }
         });
 
@@ -183,30 +185,7 @@ export default function VimeoPage() {
           }}
         >
           <div className="cta-inner">
-            <a 
-              className="cta-link" 
-              href="https://rhparisevent.com" 
-              target="_blank" 
-              rel="noopener"
-            >
-              <h2>RSVP</h2>
-              <small>CLICK HERE</small>
-            </a>
-            <div className="divider"></div>
-            <a 
-              className="cta-link" 
-              href="mailto:carlos@multitudeone.com"
-            >
-              <h2>BOOK A TABLE</h2>
-              <small>CLICK HERE</small>
-            </a>
-            <div className="logo">RH&nbsp;&nbsp;PARIS</div>
-            <button 
-              className="close-cta"
-              onClick={() => setShowCTA(false)}
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <VideoActions onClose={() => setShowCTA(false)} />
           </div>
         </div>
       )}
