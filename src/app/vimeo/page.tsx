@@ -141,6 +141,7 @@ export default function VimeoPage() {
         <iframe
           ref={playerRef}
           src="https://player.vimeo.com/video/1112605590?autopause=1&muted=0&controls=0&title=0&byline=0&portrait=0&dnt=1&transparent=0"
+        //   src="https://player.vimeo.com/video/1112605590?autopause=1&title=0&byline=0&portrait=0&dnt=1&transparent=0"
           frameBorder="0"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
