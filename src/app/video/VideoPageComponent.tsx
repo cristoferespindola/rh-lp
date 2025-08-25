@@ -424,48 +424,7 @@ export default function VideoPageComponent() {
               video.bind("secondchange", (seconds?: number) => {
                 if (seconds === undefined) return;
                 console.log("Desktop: Video second changed:", seconds);
-
-                // Convert time to seconds (e.g., 2.30 = 2 minutes 30 seconds = 150 seconds)
-                const hotspot1Time = 2 * 60 + 34; // 2:30 = 150 seconds
-                const hotspot2Time = 2 * 60 + 37; // 2:37 = 157 seconds
-                const hotspot3Time = 2 * 60 + 40; // 2:40 = 160 seconds
                 const videoActionsTime = 2 * 60 + 30; // 2:30 = 150 seconds
-
-                if (
-                  seconds >= hotspot1Time &&
-                  !visibleHotspots.includes("hotspot-1")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 1 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-1"]);
-                }
-
-                if (
-                  seconds >= hotspot2Time &&
-                  !visibleHotspots.includes("hotspot-2")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 2 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-2"]);
-                }
-
-                if (
-                  seconds >= hotspot3Time &&
-                  !visibleHotspots.includes("hotspot-3")
-                ) {
-                  console.log(
-                    "Desktop: Showing hotspot 3 at",
-                    seconds,
-                    "seconds"
-                  );
-                  setVisibleHotspots(prev => [...prev, "hotspot-3"]);
-                }
 
                 // Show VideoActions at 2:30
                 if (seconds >= videoActionsTime && !videoActionsShown) {
@@ -586,10 +545,6 @@ export default function VideoPageComponent() {
         id="wistia-video-mobile-fullscreen"
         ref={containerRef}
       >
-        <VideoOverlayActions
-          visibleHotspots={visibleHotspots}
-          containerId="wistia-video-mobile-fullscreen"
-        />
         <div
           ref={ref}
           id="wistia-video-mobile"
