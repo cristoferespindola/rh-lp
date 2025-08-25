@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
 import VideoActions from "@/components/videoActions";
+import StaticTurnOn from "@/components/video/StaticTurnOn";
 
 export default function VimeoPage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -11,7 +12,12 @@ export default function VimeoPage() {
   const [showCTA, setShowCTA] = useState(false);
   const [ctaShown, setCtaShown] = useState(false);
   const playerRef = useRef<HTMLIFrameElement>(null);
-  const [player, setPlayer] = useState<{ pause: () => Promise<void>; play: () => Promise<void>; requestFullscreen?: () => Promise<void>; on: (event: string, callback: (data: { seconds: number }) => void) => void } | null>(null);
+  const [player, setPlayer] = useState<{
+    pause: () => Promise<void>;
+    play: () => Promise<void>;
+    requestFullscreen?: () => Promise<void>;
+    on: (event: string, callback: (data: { seconds: number }) => void) => void;
+  } | null>(null);
 
   const MOBILE_MAX_WIDTH = 1024;
   const CTA_TIME_SECONDS = 150; // 2:30
@@ -23,7 +29,7 @@ export default function VimeoPage() {
     }
   };
 
-  const isPortrait = () => window.matchMedia('(orientation: portrait)').matches;
+  const isPortrait = () => window.matchMedia("(orientation: portrait)").matches;
   const isMobileish = () => window.innerWidth <= MOBILE_MAX_WIDTH;
 
   const requestFullscreenSafely = async () => {
@@ -41,7 +47,7 @@ export default function VimeoPage() {
   const showRotateIfNeeded = useCallback(() => {
     const mobile = isMobileish();
     const portrait = isPortrait();
-    
+
     setIsMobile(mobile);
     setIsLandscape(!portrait);
 
@@ -78,8 +84,8 @@ export default function VimeoPage() {
 
   useEffect(() => {
     // Load Vimeo Player API
-    const script = document.createElement('script');
-    script.src = 'https://player.vimeo.com/api/player.js';
+    const script = document.createElement("script");
+    script.src = "https://player.vimeo.com/api/player.js";
     script.async = true;
     script.onload = () => {
       if (playerRef.current && window.Vimeo) {
@@ -87,7 +93,7 @@ export default function VimeoPage() {
         setPlayer(vimeoPlayer);
 
         // Listen for timeupdate to show CTA and pause video
-        vimeoPlayer.on('timeupdate', (data: { seconds: number }) => {
+        vimeoPlayer.on("timeupdate", (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= CTA_TIME_SECONDS) {
             setCtaShown(true);
             setShowCTA(true);
@@ -97,7 +103,7 @@ export default function VimeoPage() {
         });
 
         // Show CTA if video ends before timestamp
-        vimeoPlayer.on('ended', () => {
+        vimeoPlayer.on("ended", () => {
           if (!ctaShown) {
             setShowCTA(true);
           }
@@ -118,19 +124,19 @@ export default function VimeoPage() {
       setTimeout(showRotateIfNeeded, 300);
     };
 
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', showRotateIfNeeded);
+    window.addEventListener("orientationchange", handleOrientationChange);
+    window.addEventListener("resize", showRotateIfNeeded);
 
     // Keyboard escape closes CTA
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowCTA(false);
+      if (e.key === "Escape") setShowCTA(false);
     };
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
-      window.removeEventListener('resize', showRotateIfNeeded);
-      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("orientationchange", handleOrientationChange);
+      window.removeEventListener("resize", showRotateIfNeeded);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [player, showRotateIfNeeded]);
 
@@ -141,7 +147,7 @@ export default function VimeoPage() {
         <iframe
           ref={playerRef}
           src="https://player.vimeo.com/video/1112605590?autopause=1&muted=0&controls=0&title=0&byline=0&portrait=0&dnt=1&transparent=0"
-        //   src="https://player.vimeo.com/video/1112605590?autopause=1&title=0&byline=0&portrait=0&dnt=1&transparent=0"
+          //   src="https://player.vimeo.com/video/1112605590?autopause=1&title=0&byline=0&portrait=0&dnt=1&transparent=0"
           frameBorder="0"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
@@ -153,11 +159,7 @@ export default function VimeoPage() {
       {isMobile && !isLandscape && (
         <div className="rotate-overlay visible">
           <div className="rotate-card">
-            <div className="mx-auto max-w-3xl w-1/2 mb-6">
-              <TurnOnPhone className="w-full h-full" />
-            </div>
-            <div className="rotate-title">ROTATE YOUR PHONE</div>
-            <div className="rotate-sub">For the full‑screen experience, please turn your device to landscape.</div>
+            <StaticTurnOn />
           </div>
         </div>
       )}
@@ -165,11 +167,7 @@ export default function VimeoPage() {
       {/* Tap to Play Overlay for Mobile Landscape */}
       {showTapToPlay && (
         <div className="tap-to-play visible">
-          <button 
-            className="play-btn" 
-            onClick={handlePlayClick}
-            type="button"
-          >
+          <button className="play-btn" onClick={handlePlayClick} type="button">
             TAP TO ENTER EXPERIENCE
           </button>
         </div>
@@ -177,9 +175,9 @@ export default function VimeoPage() {
 
       {/* CTA Overlay at 2:31 */}
       {showCTA && (
-        <div 
-          className="cta-slate visible" 
-          onClick={(e) => {
+        <div
+          className="cta-slate visible"
+          onClick={e => {
             if (e.target === e.currentTarget) {
               setShowCTA(false);
             }
@@ -229,8 +227,8 @@ export default function VimeoPage() {
           color: #f5f5f5;
         }
 
-        .rotate-overlay.visible { 
-          display: flex; 
+        .rotate-overlay.visible {
+          display: flex;
         }
 
         .rotate-card {
@@ -238,39 +236,39 @@ export default function VimeoPage() {
           width: 100%;
         }
 
-        .rotate-title { 
-          font-size: clamp(22px, 4vw, 36px); 
+        .rotate-title {
+          font-size: clamp(22px, 4vw, 36px);
           letter-spacing: 0.12em;
           font-family: ui-serif, "Times New Roman", Times, serif;
         }
 
-        .rotate-sub { 
-          margin-top: 8px; 
-          opacity: 0.8; 
+        .rotate-sub {
+          margin-top: 8px;
+          opacity: 0.8;
           font-size: clamp(14px, 2.5vw, 18px);
           font-family: ui-serif, "Times New Roman", Times, serif;
         }
 
         .tap-to-play {
-          position: absolute; 
-          inset: 0; 
-          display: none; 
-          place-items: center; 
+          position: absolute;
+          inset: 0;
+          display: none;
+          place-items: center;
           z-index: 11;
-          background: rgba(0,0,0,0.6);
+          background: rgba(0, 0, 0, 0.6);
         }
 
-        .tap-to-play.visible { 
-          display: grid; 
+        .tap-to-play.visible {
+          display: grid;
         }
 
         .play-btn {
-          border: 1px solid #777; 
-          color: #fff; 
-          background: transparent; 
+          border: 1px solid #777;
+          color: #fff;
+          background: transparent;
           padding: 14px 28px;
-          font-size: clamp(14px, 2.6vw, 18px); 
-          letter-spacing: 0.15em; 
+          font-size: clamp(14px, 2.6vw, 18px);
+          letter-spacing: 0.15em;
           cursor: pointer;
           font-family: ui-serif, "Times New Roman", Times, serif;
         }
@@ -279,15 +277,15 @@ export default function VimeoPage() {
           position: absolute;
           inset: 0;
           display: none;
-          background: rgba(0,0,0,0.95);
+          background: rgba(0, 0, 0, 0.95);
           z-index: 12;
           align-items: center;
           justify-content: center;
           color: #f5f5f5;
         }
 
-        .cta-slate.visible { 
-          display: flex; 
+        .cta-slate.visible {
+          display: flex;
         }
 
         .cta-inner {
@@ -305,28 +303,28 @@ export default function VimeoPage() {
           font-family: ui-serif, "Times New Roman", Times, serif;
         }
 
-        .cta-link h2 { 
-          font-weight: 400; 
-          margin: 0; 
-          font-size: clamp(28px, 6vw, 56px); 
-          letter-spacing: 0.14em; 
+        .cta-link h2 {
+          font-weight: 400;
+          margin: 0;
+          font-size: clamp(28px, 6vw, 56px);
+          letter-spacing: 0.14em;
         }
 
-        .cta-link small { 
-          display: block; 
-          margin-top: 8px; 
-          letter-spacing: 0.3em; 
-          font-size: clamp(10px, 2vw, 12px); 
+        .cta-link small {
+          display: block;
+          margin-top: 8px;
+          letter-spacing: 0.3em;
+          font-size: clamp(10px, 2vw, 12px);
         }
 
-        .divider { 
-          height: 28px; 
+        .divider {
+          height: 28px;
         }
 
-        .logo { 
-          margin-top: 24px; 
-          opacity: 0.85; 
-          letter-spacing: 0.5em; 
+        .logo {
+          margin-top: 24px;
+          opacity: 0.85;
+          letter-spacing: 0.5em;
           font-size: clamp(20px, 4.5vw, 40px);
           font-family: ui-serif, "Times New Roman", Times, serif;
         }
@@ -335,7 +333,7 @@ export default function VimeoPage() {
           position: absolute;
           top: -20px;
           right: -20px;
-          background: rgba(0,0,0,.6);
+          background: rgba(0, 0, 0, 0.6);
           color: #fff;
           border: 0;
           padding: 10px 12px;
@@ -345,13 +343,13 @@ export default function VimeoPage() {
         }
 
         .close-cta:hover {
-          background: rgba(0,0,0,.8);
+          background: rgba(0, 0, 0, 0.8);
         }
 
         @media (prefers-reduced-motion: reduce) {
-          * { 
-            animation: none !important; 
-            transition: none !important; 
+          * {
+            animation: none !important;
+            transition: none !important;
           }
         }
       `}</style>
