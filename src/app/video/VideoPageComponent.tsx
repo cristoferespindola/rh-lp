@@ -8,6 +8,12 @@ import "./style.css";
 import StaticTurnOn from "@/components/video/StaticTurnOn";
 import { isiOSDevice } from "@/lib/device";
 
+type VideoWrapper = HTMLDivElement & {
+  webkitEnterFullscreen: () => void;
+  webkitRequestFullscreen: () => void;
+  mozRequestFullScreen: () => void;
+};
+
 export default function VideoPageComponent() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -15,7 +21,7 @@ export default function VideoPageComponent() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [visibleHotspots, setVisibleHotspots] = useState<string[]>([]);
   const ref = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<VideoWrapper>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const isiOS = isiOSDevice();
@@ -39,6 +45,7 @@ export default function VideoPageComponent() {
       if (vid.muted) vid.muted = false;
       if (vid.paused) vid.play();
       setIsPlaying(true);
+
       if (isiOS && typeof vid.webkitEnterFullscreen === "function") {
         parent?.webkitEnterFullscreen();
         return true;
