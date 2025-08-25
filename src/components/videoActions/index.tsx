@@ -34,7 +34,7 @@ export default function VideoActions({ onClose }: VideoActionsProps) {
           >
             <span className="text-2xl" style={{
               fontFamily: "RH Sans Serif",
-              fontSize: "clamp(1.25rem, 0.2679rem + 1.9643vw, 2.625rem)",
+              fontSize: "clamp(1.5rem, 0.6964rem + 1.6071vw, 2.625rem)",
               fontStyle: "normal",
               fontWeight: "400",
               lineHeight: "1.2",
@@ -43,7 +43,7 @@ export default function VideoActions({ onClose }: VideoActionsProps) {
             }}>{action.label}</span>
             <span className="text-lg" style={{
               fontFamily: "RH Sans",
-              fontSize: "clamp(0.5625rem, 0.0714rem + 0.9821vw, 1.25rem)",
+              fontSize: "clamp(0.75rem, 0.5714rem + 0.3571vw, 1rem)",
               fontStyle: "normal",
               fontWeight: "600",
               lineHeight: "1.2",
