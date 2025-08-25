@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { TurnOnPhone } from "@/components/svg/TurnOnPhone";
+
 import VideoOverlayActions from "@/components/videoOverlayActions";
 
 import "./style.css";
 import StaticTurnOn from "@/components/video/StaticTurnOn";
 import { isiOSDevice } from "@/lib/device";
+import InteractiveTurnOn from "@/components/video/InteractiveTurnOn";
 
 export default function VideoPageComponent() {
   const [isMobile, setIsMobile] = useState(false);
@@ -417,6 +418,65 @@ export default function VideoPageComponent() {
     console.log("showHotspots state changed:", showHotspots);
   }, [showHotspots]);
 
+  const handleInteractiveAction = () => {
+    console.log("Interactive action triggered");
+    
+    // 1. Primeiro, tenta fullscreen
+    console.log("Tentando entrar em fullscreen...");
+    const vid = getWistiaVideoEl();
+    const parent = containerRef.current;
+    
+    if (vid && parent) {
+      try {
+        // Tenta fullscreen no container primeiro
+        if (parent.requestFullscreen) {
+          parent.requestFullscreen().then(() => {
+            console.log("Fullscreen ativado, iniciando video...");
+            // 2. Depois do fullscreen, inicia o video
+            setTimeout(() => {
+              const wistiaWindow = window as Window & {
+                Wistia?: {
+                  api: (id: string) => {
+                    play: () => void;
+                    requestFullscreen?: () => void;
+                  };
+                };
+              };
+              const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
+              try {
+                wv?.play?.();
+                setIsPlaying(true);
+                console.log("Video iniciado!");
+              } catch (e) {
+                console.warn("Falha ao iniciar video:", e);
+              }
+            }, 500);
+          }).catch(err => {
+            console.log("Falha no fullscreen:", err);
+            // Fallback: tenta play direto
+            const wistiaWindow = window as Window & {
+              Wistia?: {
+                api: (id: string) => {
+                  play: () => void;
+                  requestFullscreen?: () => void;
+                };
+              };
+            };
+            const wv = wistiaWindow.Wistia?.api?.("avj1qhbupb");
+            try {
+              wv?.play?.();
+              setIsPlaying(true);
+            } catch (e) {
+              console.warn("Falha no fallback:", e);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Erro no fullscreen:", e);
+      }
+    }
+  };
+
   if (!isMobile) {
     console.log("Desktop mode - rendering video");
     return (
@@ -446,7 +506,7 @@ export default function VideoPageComponent() {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-8">
         <div className="text-center space-y-8">
           <div className="mx-auto max-w-3xl w-1/2">
-            <TurnOnPhone className="w-full h-full" />
+            <InteractiveTurnOn action={handleInteractiveAction} />
           </div>
           <div className="space-y-4" id="video-message">
             <h1 className="text-2xl font-rh-sans font-light">
