@@ -208,7 +208,6 @@ export default function VideoExperience({
     console.log("Entering experience...");
     setHasEntered(true);
     setShowTapToPlay(false);
-    await requestFullscreenSafely();
 
     // dar play após gesto do usuário usando API do Vimeo
     const iframe = playerRef.current;
@@ -216,11 +215,16 @@ export default function VideoExperience({
       try {
         const player = new window.Vimeo.Player(iframe);
         await player.play();
+        
+        // No iOS, não entrar em fullscreen automaticamente para permitir que a modal apareça
+        if (!isIOS) {
+          await requestFullscreenSafely();
+        }
       } catch (error) {
         console.error("Error playing video:", error);
       }
     }
-  }, [requestFullscreenSafely]);
+  }, [requestFullscreenSafely, isIOS]);
 
   // --- callbacks do player
 
@@ -310,7 +314,7 @@ export default function VideoExperience({
       modalBackdrop: {
         position: "absolute" as const,
         inset: 0,
-        zIndex: 20,
+        zIndex: 9999,
         display: "grid",
         placeItems: "center",
         pointerEvents: "auto" as const,
@@ -455,7 +459,7 @@ export default function VideoExperience({
               exit={{ backgroundColor: "rgba(0,0,0,0)" }}
             >
               <motion.div
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: "100%", height: "100%", position: "relative" }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -465,6 +469,33 @@ export default function VideoExperience({
                 aria-label="Informações"
               >
                 <VideoActions onClose={() => setShowModal(false)} />
+                
+                {/* Botão de fullscreen para iOS */}
+                {isIOS && (
+                  <motion.button
+                    onClick={requestFullscreenSafely}
+                    style={{
+                      position: "absolute",
+                      bottom: 20,
+                      right: 20,
+                      background: "rgba(255,255,255,0.2)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      color: "#fff",
+                      padding: "8px 12px",
+                      borderRadius: 6,
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      zIndex: 10000,
+                    }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Fullscreen
+                  </motion.button>
+                )}
               </motion.div>
             </motion.div>
           )}
