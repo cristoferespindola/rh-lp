@@ -69,13 +69,42 @@ export default function VideoExperience({
     }
   }, [computePortrait, computeMobileish, hasEntered]);
 
+  // Forçar refresh dos overlays quando a orientação mudar
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      // Delay para garantir que a orientação foi detectada
+      setTimeout(() => {
+        refreshOverlays();
+        // Forçar remoção do overlay de rotação se não estiver mais em portrait
+        if (!computePortrait()) {
+          setShowRotateOverlay(false);
+        }
+      }, 100);
+    };
+
+    window.addEventListener('orientationchange', handleOrientationChange);
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, [refreshOverlays, computePortrait]);
+
   useEffect(() => {
     setIsIOS(computeIOS());
     refreshOverlays();
-    const onResize = () => refreshOverlays();
-    const onOrientation = () => refreshOverlays();
+    
+    const onResize = () => {
+      // Delay para evitar múltiplas chamadas
+      setTimeout(() => refreshOverlays(), 50);
+    };
+    
+    const onOrientation = () => {
+      // Delay maior para orientação para garantir que foi detectada
+      setTimeout(() => refreshOverlays(), 300);
+    };
+    
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onOrientation);
+    
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onOrientation);
@@ -147,22 +176,31 @@ export default function VideoExperience({
 
   // --- tentar fullscreen no container (não no player)
   const requestFullscreenSafely = useCallback(async () => {
-    // Evitar nativo no iOS (não sobrepõe bem)
-    if (isIOS) return;
     const el = wrapRef.current;
     if (!el) return;
+    
     try {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else {
-        const webkitEl = el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
-        if (webkitEl.webkitRequestFullscreen) await webkitEl.webkitRequestFullscreen();
+      // No iOS, tentar fullscreen do iframe do vídeo em vez do container
+      if (isIOS) {
+        const iframe = playerRef.current;
+        if (iframe && window.Vimeo) {
+          const player = new window.Vimeo.Player(iframe);
+          await player.requestFullscreen();
+        }
+      } else {
+        // Em outros dispositivos, tentar fullscreen do container
+        if (el.requestFullscreen) await el.requestFullscreen();
         else {
-          const msEl = el as HTMLElement & { msRequestFullscreen?: () => Promise<void> };
-          if (msEl.msRequestFullscreen) await msEl.msRequestFullscreen();
+          const webkitEl = el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
+          if (webkitEl.webkitRequestFullscreen) await webkitEl.webkitRequestFullscreen();
+          else {
+            const msEl = el as HTMLElement & { msRequestFullscreen?: () => Promise<void> };
+            if (msEl.msRequestFullscreen) await msEl.msRequestFullscreen();
+          }
         }
       }
-    } catch {
-      // no-op
+    } catch (error) {
+      console.log("Fullscreen failed:", error);
     }
   }, [isIOS]);
 
@@ -190,7 +228,12 @@ export default function VideoExperience({
     console.log("Player ready!");
     setIsReady(true);
     setHasError(false);
-  }, []);
+    
+    // Forçar refresh dos overlays após o vídeo estar pronto
+    setTimeout(() => {
+      refreshOverlays();
+    }, 100);
+  }, [refreshOverlays]);
 
   const onError = useCallback((error: any) => {
     console.error("Player error:", error);
@@ -314,6 +357,23 @@ export default function VideoExperience({
         <div style={styles.loadingOverlay}>
           <div>Carregando vídeo...</div>
         </div>
+
+        {/* Debug info para iOS */}
+        {isIOS && (
+          <div style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            background: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            padding: '4px 8px',
+            fontSize: '12px',
+            zIndex: 1000,
+            display: isReady ? 'none' : 'block'
+          }}>
+            iOS: {isPortrait ? 'Portrait' : 'Landscape'} | Mobile: {isMobileish ? 'Yes' : 'No'}
+          </div>
+        )}
 
         {/* Error Overlay */}
         <div style={styles.errorOverlay}>
