@@ -123,6 +123,13 @@ export default function VideoExperience({
         if (iframe && window.Vimeo) {
           const player = new window.Vimeo.Player(iframe);
           
+          // Marcar como pronto quando o player estiver carregado
+          player.on('loaded', () => {
+            console.log("Vimeo player loaded");
+            setIsReady(true);
+            refreshOverlays();
+          });
+          
           // Monitorar progresso do vídeo
           player.on('timeupdate', (data: { seconds: number }) => {
             if (!ctaShown && data.seconds >= ctaTimeSec) {
@@ -167,6 +174,13 @@ export default function VideoExperience({
       if (iframe && window.Vimeo) {
         const player = new window.Vimeo.Player(iframe);
         
+        // Marcar como pronto quando o player estiver carregado
+        player.on('loaded', () => {
+          console.log("Vimeo player loaded");
+          setIsReady(true);
+          refreshOverlays();
+        });
+        
         // Monitorar progresso do vídeo
         player.on('timeupdate', (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= ctaTimeSec) {
@@ -204,7 +218,7 @@ export default function VideoExperience({
         });
       }
     }
-  }, [ctaShown, ctaTimeSec, autoOpenModalAt]);
+  }, [ctaShown, ctaTimeSec, autoOpenModalAt, refreshOverlays]);
 
   // --- tentar fullscreen no container (não no player)
   const requestFullscreenSafely = useCallback(async () => {
@@ -284,6 +298,19 @@ export default function VideoExperience({
       refreshOverlays();
     }, 100);
   }, [refreshOverlays]);
+
+  // Fallback: se o onReady não for chamado, marcar como pronto após um tempo
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isReady && !hasError) {
+        console.log("Fallback: marking as ready");
+        setIsReady(true);
+        refreshOverlays();
+      }
+    }, 3000); // 3 segundos de timeout
+
+    return () => clearTimeout(timer);
+  }, [isReady, hasError, refreshOverlays]);
 
   const onError = useCallback((error: any) => {
     console.error("Player error:", error);
@@ -462,6 +489,7 @@ export default function VideoExperience({
           style={{ background: "#000" }}
           onLoad={onReady}
           onError={onError}
+          onLoadStart={() => console.log("Iframe load started")}
         />
 
         {/* Overlay: gire o telefone */}
