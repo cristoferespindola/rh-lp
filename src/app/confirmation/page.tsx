@@ -23,20 +23,17 @@ export default function Confirmation() {
         </h1>
 
         <p
-          className="text-white text-center text-xl sm:text-2xl md:text-3xl"
+          className="text-white text-center text-xl sm:text-2xl md:text-3xl px-8  md:px-16"
           style={{
             fontFamily: "RH Serif",
             fontStyle: "normal",
             fontWeight: "400",
-            padding: "0 68px",
             textTransform: "uppercase",
             letterSpacing: "0.48px",
           }}
         >
-          if you’d like to join us for
-          <br />
-          complimentary dining at Le Jardin or Le Petit
-          <br />{" "}
+          if you’d like to join us for<br className="hidden md:block" />
+          complimentary dining at Le Jardin or Le Petit<br/>
           <a className="underline" href="mailto:RHParisOpeningParty@rh.com?subject=Reserve%20a%20Table%20at%20Le%20Jardin%20or%20Le%20Petit%20RH&amp;body=Please%20request%20a%20table%20for%20a%20party%20of%20two%20or%20four%20beginning%20at%207pm%20until%2011pm.%0A%0AReservations%20are%20exclusively%20available%20for%20guests%20invited%20to%20the%20unveiling%20of%20RH%20Paris%20on%204%20September">
             Please Click Here
           </a>
