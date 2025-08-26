@@ -1,3 +1,5 @@
+"use client";
+
 import Logo from "../svg/Logo";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
