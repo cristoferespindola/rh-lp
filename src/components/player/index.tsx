@@ -128,6 +128,14 @@ export default function VideoExperience({
             if (!ctaShown && data.seconds >= ctaTimeSec) {
               setCtaShown(true);
               if (autoOpenModalAt === "cta") {
+                // Sair do fullscreen antes de mostrar a modal
+                if (isIOS) {
+                  try {
+                    (player as any).exitFullscreen();
+                  } catch (error) {
+                    console.log("Erro ao sair do fullscreen:", error);
+                  }
+                }
                 setShowModal(true);
               }
             }
@@ -138,6 +146,14 @@ export default function VideoExperience({
             if (!ctaShown) {
               setCtaShown(true);
               if (autoOpenModalAt === "ended") {
+                // Sair do fullscreen antes de mostrar a modal
+                if (isIOS) {
+                  try {
+                    (player as any).exitFullscreen();
+                  } catch (error) {
+                    console.log("Erro ao sair do fullscreen:", error);
+                  }
+                }
                 setShowModal(true);
               }
             }
@@ -156,6 +172,14 @@ export default function VideoExperience({
           if (!ctaShown && data.seconds >= ctaTimeSec) {
             setCtaShown(true);
             if (autoOpenModalAt === "cta") {
+              // Sair do fullscreen antes de mostrar a modal
+              if (isIOS) {
+                try {
+                  (player as any).exitFullscreen();
+                } catch (error) {
+                  console.log("Erro ao sair do fullscreen:", error);
+                }
+              }
               setShowModal(true);
             }
           }
@@ -166,6 +190,14 @@ export default function VideoExperience({
           if (!ctaShown) {
             setCtaShown(true);
             if (autoOpenModalAt === "ended") {
+              // Sair do fullscreen antes de mostrar a modal
+              if (isIOS) {
+                try {
+                  (player as any).exitFullscreen();
+                } catch (error) {
+                  console.log("Erro ao sair do fullscreen:", error);
+                }
+              }
               setShowModal(true);
             }
           }
@@ -185,7 +217,21 @@ export default function VideoExperience({
         const iframe = playerRef.current;
         if (iframe && window.Vimeo) {
           const player = new window.Vimeo.Player(iframe);
+          console.log("Tentando fullscreen do Vimeo no iOS...");
           await player.requestFullscreen();
+          console.log("Fullscreen do Vimeo ativado!");
+        } else {
+          console.log("Vimeo API não disponível para fullscreen");
+          // Fallback: tentar fullscreen do iframe diretamente
+          const iframe = playerRef.current;
+          if (iframe && (iframe as any).requestFullscreen) {
+            try {
+              await (iframe as any).requestFullscreen();
+              console.log("Fullscreen do iframe ativado!");
+            } catch (e) {
+              console.log("Fullscreen do iframe falhou:", e);
+            }
+          }
         }
       } else {
         // Em outros dispositivos, tentar fullscreen do container
@@ -376,6 +422,20 @@ export default function VideoExperience({
             display: isReady ? 'none' : 'block'
           }}>
             iOS: {isPortrait ? 'Portrait' : 'Landscape'} | Mobile: {isMobileish ? 'Yes' : 'No'}
+            <br />
+            <button 
+              onClick={requestFullscreenSafely}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid white',
+                color: 'white',
+                padding: '2px 6px',
+                fontSize: '10px',
+                marginTop: '4px'
+              }}
+            >
+              Test Fullscreen
+            </button>
           </div>
         )}
 
