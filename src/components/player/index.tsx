@@ -232,19 +232,34 @@ export default function VideoExperience({
         if (iframe && window.Vimeo) {
           const player = new window.Vimeo.Player(iframe);
           console.log("Tentando fullscreen do Vimeo no iOS...");
-          await player.requestFullscreen();
-          console.log("Fullscreen do Vimeo ativado!");
-        } else {
-          console.log("Vimeo API não disponível para fullscreen");
-          // Fallback: tentar fullscreen do iframe diretamente
-          const iframe = playerRef.current;
-          if (iframe && (iframe as any).requestFullscreen) {
+          
+          // Tentar múltiplas vezes se necessário
+          let attempts = 0;
+          const maxAttempts = 3;
+          
+          while (attempts < maxAttempts) {
             try {
-              await (iframe as any).requestFullscreen();
-              console.log("Fullscreen do iframe ativado!");
+              await player.requestFullscreen();
+              console.log("Fullscreen do Vimeo ativado!");
+              return;
             } catch (e) {
-              console.log("Fullscreen do iframe falhou:", e);
+              attempts++;
+              console.log(`Tentativa ${attempts} falhou:`, e);
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+              }
             }
+          }
+        }
+        
+        // Fallback: tentar fullscreen do iframe diretamente
+        const iframeFallback = playerRef.current;
+        if (iframeFallback && (iframeFallback as any).requestFullscreen) {
+          try {
+            await (iframeFallback as any).requestFullscreen();
+            console.log("Fullscreen do iframe ativado!");
+          } catch (e) {
+            console.log("Fullscreen do iframe falhou:", e);
           }
         }
       } else {
@@ -276,15 +291,15 @@ export default function VideoExperience({
         const player = new window.Vimeo.Player(iframe);
         await player.play();
         
-        // No iOS, não entrar em fullscreen automaticamente para permitir que a modal apareça
-        if (!isIOS) {
+        // Aguardar um pouco e então entrar em fullscreen
+        setTimeout(async () => {
           await requestFullscreenSafely();
-        }
+        }, 500);
       } catch (error) {
         console.error("Error playing video:", error);
       }
     }
-  }, [requestFullscreenSafely, isIOS]);
+  }, [requestFullscreenSafely]);
 
   // --- callbacks do player
 
