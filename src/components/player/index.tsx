@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence } from "framer-motion";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import StaticTurnOn from "@/components/video/StaticTurnOn";
 import VideoActions from "@/components/videoActions";
 
 type Props = {
   vimeoUrl: string; // ex: https://vimeo.com/1112605590
-  rotateImageUrl?: string; // opcional, img do aviso "gire o telefone"
-  ctaTimeSec?: number; // default 151 (2:31)
-  autoOpenModalAt?: "cta" | "ended" | null; // quando abrir a modal automaticamente
+  rotateImageUrl?: string;
+  ctaTimeSec?: number; // default 151
+  autoOpenModalAt?: "cta" | "ended" | null;
 };
 
 const MOBILE_MAX_WIDTH = 1024;
@@ -22,7 +21,8 @@ export default function VideoExperience({
   autoOpenModalAt = "cta",
 }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const playerRef = useRef(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const vimeoPlayerRef = useRef<any | null>(null); // guarda a instância única do Vimeo.Player
 
   const [isPortrait, setIsPortrait] = useState(false);
   const [isMobileish, setIsMobileish] = useState(false);
@@ -33,11 +33,14 @@ export default function VideoExperience({
   const [showRotateOverlay, setShowRotateOverlay] = useState(false);
   const [showTapToPlay, setShowTapToPlay] = useState(false);
 
-  const [hasEntered, setHasEntered] = useState(false); // já clicou no tap-to-enter
-  const [ctaShown, setCtaShown] = useState(false);     // hotspots já visíveis
-  const [showModal, setShowModal] = useState(false);   // modal Framer Motion
+  const [hasEntered, setHasEntered] = useState(false);
+  const [ctaShown, setCtaShown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
-  // --- helpers de ambiente/orientação
+  // pseudo-fullscreen fallback p/ iOS que não suporta requestFullscreen no container
+  const [pseudoFS, setPseudoFS] = useState(false);
+
+  // --- helpers
   const computePortrait = useCallback(
     () => window.matchMedia && window.matchMedia("(orientation: portrait)").matches,
     []
@@ -49,7 +52,6 @@ export default function VideoExperience({
     return /iPad|iPhone|iPod/.test(ua) || isTouchMac;
   }, []);
 
-  // --- controlar overlays de rotate/tap
   const refreshOverlays = useCallback(() => {
     const p = computePortrait();
     const m = computeMobileish();
@@ -61,7 +63,6 @@ export default function VideoExperience({
       setShowTapToPlay(false);
     } else if (m && !p) {
       setShowRotateOverlay(false);
-      // só mostra tap-to-play se ainda não entrou
       setShowTapToPlay(!hasEntered);
     } else {
       setShowRotateOverlay(false);
@@ -69,263 +70,159 @@ export default function VideoExperience({
     }
   }, [computePortrait, computeMobileish, hasEntered]);
 
-  // Forçar refresh dos overlays quando a orientação mudar
-  useEffect(() => {
-    const handleOrientationChange = () => {
-      // Delay para garantir que a orientação foi detectada
-      setTimeout(() => {
-        refreshOverlays();
-        // Forçar remoção do overlay de rotação se não estiver mais em portrait
-        if (!computePortrait()) {
-          setShowRotateOverlay(false);
-        }
-      }, 100);
-    };
-
-    window.addEventListener('orientationchange', handleOrientationChange);
-    return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, [refreshOverlays, computePortrait]);
-
   useEffect(() => {
     setIsIOS(computeIOS());
     refreshOverlays();
-    
-    const onResize = () => {
-      // Delay para evitar múltiplas chamadas
-      setTimeout(() => refreshOverlays(), 50);
-    };
-    
-    const onOrientation = () => {
-      // Delay maior para orientação para garantir que foi detectada
-      setTimeout(() => refreshOverlays(), 300);
-    };
-    
+
+    const onResize = () => setTimeout(() => refreshOverlays(), 50);
+    const onOrientation = () => setTimeout(() => refreshOverlays(), 300);
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onOrientation);
-    
+
+    // monitorar mudanças de fullscreen p/ desativar pseudoFS quando sair
+    const onFSChange = () => {
+      const fsEl =
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement;
+      if (!fsEl) setPseudoFS(false);
+    };
+    document.addEventListener("fullscreenchange", onFSChange as any);
+    document.addEventListener("webkitfullscreenchange", onFSChange as any);
+
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onOrientation);
+      document.removeEventListener("fullscreenchange", onFSChange as any);
+      document.removeEventListener("webkitfullscreenchange", onFSChange as any);
     };
   }, [computeIOS, refreshOverlays]);
 
-  // Carregar API do Vimeo e configurar monitoramento de tempo
+  // --- inicializa 1x o Vimeo.Player e registra listeners
   useEffect(() => {
-    if (!window.Vimeo) {
-      const script = document.createElement("script");
-      script.src = "https://player.vimeo.com/api/player.js";
-      script.async = true;
-      script.onload = () => {
-        // Configurar monitoramento de tempo após carregar a API
-        const iframe = playerRef.current;
-        if (iframe && window.Vimeo) {
-          const player = new window.Vimeo.Player(iframe);
-          
-          // Marcar como pronto quando o player estiver carregado
-          player.on('loaded', () => {
-            console.log("Vimeo player loaded");
-            setIsReady(true);
-            refreshOverlays();
-          });
-          
-          // Monitorar progresso do vídeo
-          player.on('timeupdate', (data: { seconds: number }) => {
-            if (!ctaShown && data.seconds >= ctaTimeSec) {
-              setCtaShown(true);
-              if (autoOpenModalAt === "cta") {
-                // Sair do fullscreen antes de mostrar a modal
-                if (isIOS) {
-                  try {
-                    (player as any).exitFullscreen();
-                  } catch (error) {
-                    console.log("Erro ao sair do fullscreen:", error);
-                  }
-                }
-                setShowModal(true);
-              }
-            }
-          });
+    let disposed = false;
 
-          // Monitorar fim do vídeo
-          player.on('ended', () => {
-            if (!ctaShown) {
-              setCtaShown(true);
-              if (autoOpenModalAt === "ended") {
-                // Sair do fullscreen antes de mostrar a modal
-                if (isIOS) {
-                  try {
-                    (player as any).exitFullscreen();
-                  } catch (error) {
-                    console.log("Erro ao sair do fullscreen:", error);
-                  }
-                }
-                setShowModal(true);
-              }
-            }
-          });
-        }
-      };
-      document.head.appendChild(script);
-    } else {
-      // Se a API já estiver carregada, configurar diretamente
-      const iframe = playerRef.current;
-      if (iframe && window.Vimeo) {
-        const player = new window.Vimeo.Player(iframe);
-        
-        // Marcar como pronto quando o player estiver carregado
-        player.on('loaded', () => {
-          console.log("Vimeo player loaded");
+    const ensureVimeo = () =>
+      new Promise<void>((resolve) => {
+        if ((window as any).Vimeo?.Player) return resolve();
+        const script = document.createElement("script");
+        script.src = "https://player.vimeo.com/api/player.js";
+        script.async = true;
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
+
+    (async () => {
+      await ensureVimeo();
+      if (disposed) return;
+      if (!iframeRef.current || !(window as any).Vimeo?.Player) return;
+
+      // evita re-instanciar
+      if (!vimeoPlayerRef.current) {
+        vimeoPlayerRef.current = new (window as any).Vimeo.Player(iframeRef.current);
+
+        const player = vimeoPlayerRef.current as any;
+
+        player.on("loaded", () => {
+          if (disposed) return;
           setIsReady(true);
           refreshOverlays();
         });
-        
-        // Monitorar progresso do vídeo
-        player.on('timeupdate', (data: { seconds: number }) => {
+
+        player.on("timeupdate", (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= ctaTimeSec) {
             setCtaShown(true);
             if (autoOpenModalAt === "cta") {
-              // Sair do fullscreen antes de mostrar a modal
-              if (isIOS) {
-                try {
-                  (player as any).exitFullscreen();
-                } catch (error) {
-                  console.log("Erro ao sair do fullscreen:", error);
-                }
-              }
+              // **NÃO** sair de fullscreen aqui; queremos modal **por cima** do container
               setShowModal(true);
             }
           }
         });
 
-        // Monitorar fim do vídeo
-        player.on('ended', () => {
-          if (!ctaShown) {
-            setCtaShown(true);
-            if (autoOpenModalAt === "ended") {
-              // Sair do fullscreen antes de mostrar a modal
-              if (isIOS) {
-                try {
-                  (player as any).exitFullscreen();
-                } catch (error) {
-                  console.log("Erro ao sair do fullscreen:", error);
-                }
-              }
-              setShowModal(true);
-            }
+        player.on("ended", () => {
+          if (!ctaShown) setCtaShown(true);
+          if (autoOpenModalAt === "ended") {
+            setShowModal(true);
           }
         });
+
+        player.on("error", () => {
+          if (disposed) return;
+          setHasError(true);
+          setIsReady(false);
+        });
       }
-    }
+    })();
+
+    return () => {
+      disposed = true;
+      if (vimeoPlayerRef.current) {
+        try {
+          vimeoPlayerRef.current.off("loaded");
+          vimeoPlayerRef.current.off("timeupdate");
+          vimeoPlayerRef.current.off("ended");
+          vimeoPlayerRef.current.off("error");
+        } catch {}
+      }
+    };
   }, [ctaShown, ctaTimeSec, autoOpenModalAt, refreshOverlays]);
 
-  // --- tentar fullscreen no container (não no player)
-  const requestFullscreenSafely = useCallback(async () => {
+  // --- fullscreen do container (SEM timeout; precisa do gesto)
+  const requestContainerFullscreen = useCallback(async () => {
     const el = wrapRef.current;
-    if (!el) return;
-    
+    if (!el) return false;
     try {
-      // No iOS, tentar fullscreen do iframe do vídeo em vez do container
-      if (isIOS) {
-        const iframe = playerRef.current;
-        if (iframe && window.Vimeo) {
-          const player = new window.Vimeo.Player(iframe);
-          console.log("Tentando fullscreen do Vimeo no iOS...");
-          
-          // Tentar múltiplas vezes se necessário
-          let attempts = 0;
-          const maxAttempts = 3;
-          
-          while (attempts < maxAttempts) {
-            try {
-              await player.requestFullscreen();
-              console.log("Fullscreen do Vimeo ativado!");
-              return;
-            } catch (e) {
-              attempts++;
-              console.log(`Tentativa ${attempts} falhou:`, e);
-              if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-              }
-            }
-          }
-        }
-        
-        // Fallback: tentar fullscreen do iframe diretamente
-        const iframeFallback = playerRef.current;
-        if (iframeFallback && (iframeFallback as any).requestFullscreen) {
-          try {
-            await (iframeFallback as any).requestFullscreen();
-            console.log("Fullscreen do iframe ativado!");
-          } catch (e) {
-            console.log("Fullscreen do iframe falhou:", e);
-          }
-        }
-      } else {
-        // Em outros dispositivos, tentar fullscreen do container
-        if (el.requestFullscreen) await el.requestFullscreen();
-        else {
-          const webkitEl = el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
-          if (webkitEl.webkitRequestFullscreen) await webkitEl.webkitRequestFullscreen();
-          else {
-            const msEl = el as HTMLElement & { msRequestFullscreen?: () => Promise<void> };
-            if (msEl.msRequestFullscreen) await msEl.msRequestFullscreen();
-          }
-        }
+      if (el.requestFullscreen) {
+        await el.requestFullscreen();
+        return true;
       }
-    } catch (error) {
-      console.log("Fullscreen failed:", error);
-    }
-  }, [isIOS]);
+      const wEl = el as any;
+      if (wEl.webkitRequestFullscreen) {
+        await wEl.webkitRequestFullscreen();
+        return true;
+      }
+      if (wEl.msRequestFullscreen) {
+        await wEl.msRequestFullscreen();
+        return true;
+      }
+    } catch {}
+    return false;
+  }, []);
 
+  // --- fallback pseudo-fullscreen (CSS)
+  const enterPseudoFullscreen = useCallback(() => {
+    setPseudoFS(true);
+  }, []);
+
+  // --- handler do “enter experience”
   const handleEnterExperience = useCallback(async () => {
-    console.log("Entering experience...");
     setHasEntered(true);
     setShowTapToPlay(false);
 
-    // dar play após gesto do usuário usando API do Vimeo
-    const iframe = playerRef.current;
-    if (iframe && window.Vimeo) {
-      try {
-        const player = new window.Vimeo.Player(iframe);
-        await player.play();
-        
-        // Aguardar um pouco e então entrar em fullscreen
-        setTimeout(async () => {
-          await requestFullscreenSafely();
-        }, 500);
-      } catch (error) {
-        console.error("Error playing video:", error);
-      }
+    const player = vimeoPlayerRef.current;
+    try {
+      await player?.play();
+    } catch (e) {
+      // alguns iOS exigem toque extra; manter o botão visível se falhar
+      setShowTapToPlay(true);
+      return;
     }
-  }, [requestFullscreenSafely]);
 
-  // --- callbacks do player
+    // **IMPORTANTE:** pedir fullscreen imediatamente dentro do gesto
+    // No iOS: NÃO chamar player.requestFullscreen() (fullscreen nativo do vídeo)
+    const ok = await requestContainerFullscreen();
+
+    if (!ok && isIOS) {
+      // iOS antigo ou bloqueado? usa pseudo-FS
+      enterPseudoFullscreen();
+    }
+  }, [enterPseudoFullscreen, isIOS, requestContainerFullscreen]);
 
   const onReady = useCallback(() => {
-    console.log("Player ready!");
     setIsReady(true);
     setHasError(false);
-    
-    // Forçar refresh dos overlays após o vídeo estar pronto
-    setTimeout(() => {
-      refreshOverlays();
-    }, 100);
+    setTimeout(() => refreshOverlays(), 100);
   }, [refreshOverlays]);
-
-  // Fallback: se o onReady não for chamado, marcar como pronto após um tempo
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isReady && !hasError) {
-        console.log("Fallback: marking as ready");
-        setIsReady(true);
-        refreshOverlays();
-      }
-    }, 3000); // 3 segundos de timeout
-
-    return () => clearTimeout(timer);
-  }, [isReady, hasError, refreshOverlays]);
 
   const onError = useCallback((error: any) => {
     console.error("Player error:", error);
@@ -333,7 +230,7 @@ export default function VideoExperience({
     setIsReady(false);
   }, []);
 
-  // --- estilos inline (poderia ser CSS)
+  // estilos
   const styles = useMemo(
     () => ({
       app: {
@@ -344,12 +241,23 @@ export default function VideoExperience({
         overflow: "hidden",
       },
       wrap: {
-        position: "absolute" as const,
+        position: pseudoFS ? ("fixed" as const) : ("absolute" as const),
         inset: 0,
         display: "grid",
         placeItems: "center",
         background: "#000",
+        // cria stacking context p/ modal ficar acima
+        zIndex: 0,
       },
+      iframe: (modalOpen: boolean) => ({
+        width: "100%",
+        height: "100%",
+        border: 0,
+        position: "relative" as const,
+        zIndex: 1, // vídeo abaixo da modal
+        pointerEvents: modalOpen ? ("none" as const) : ("auto" as const), // quando modal abrir, desabilita o iframe
+        background: "#000",
+      }),
       rotateOverlay: {
         position: "absolute" as const,
         inset: 0,
@@ -359,7 +267,7 @@ export default function VideoExperience({
         textAlign: "center" as const,
         padding: 24,
         gap: 20,
-        zIndex: 10,
+        zIndex: 2,
         background: "#000",
         color: "#f5f5f5",
       },
@@ -368,7 +276,7 @@ export default function VideoExperience({
         inset: 0,
         display: showTapToPlay ? "grid" : "none",
         placeItems: "center",
-        zIndex: 11,
+        zIndex: 3,
         background: "rgba(0,0,0,.6)",
       },
       playBtn: {
@@ -384,7 +292,7 @@ export default function VideoExperience({
         inset: 0,
         display: ctaShown ? "block" : "none",
         background: "transparent",
-        zIndex: 12,
+        zIndex: 4,
         pointerEvents: "none" as const,
       },
       hotspot: {
@@ -402,18 +310,10 @@ export default function VideoExperience({
       modalBackdrop: {
         position: "absolute" as const,
         inset: 0,
-        zIndex: 9999,
+        zIndex: 5, // acima do iframe e hotspots
         display: "grid",
         placeItems: "center",
         pointerEvents: "auto" as const,
-      },
-      modalCard: {
-        width: "min(92vw, 720px)",
-        background: "#111",
-        color: "#fff",
-        border: "1px solid #333",
-        borderRadius: 12,
-        padding: 24,
       },
       loadingOverlay: {
         position: "absolute" as const,
@@ -421,7 +321,7 @@ export default function VideoExperience({
         display: !isReady && !hasError ? "flex" : "none",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 5,
+        zIndex: 6,
         background: "#000",
         color: "#fff",
       },
@@ -431,80 +331,46 @@ export default function VideoExperience({
         display: hasError ? "flex" : "none",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 5,
+        zIndex: 6,
         background: "#000",
         color: "#fff",
         flexDirection: "column" as const,
         gap: 16,
       },
     }),
-    [showRotateOverlay, showTapToPlay, ctaShown, isReady, hasError]
+    [showRotateOverlay, showTapToPlay, ctaShown, isReady, hasError, pseudoFS]
   );
 
   return (
     <div style={styles.app}>
-      {/* Container que tenta virar fullscreen */}
-      <div ref={wrapRef} style={styles.wrap} id="video-wrap">
-        {/* Loading Overlay */}
-        <div style={styles.loadingOverlay}>
-          <div>Carregando vídeo...</div>
-        </div>
+      <div
+        ref={wrapRef}
+        style={styles.wrap}
+        id="video-wrap"
+      >
+        {/* Loading */}
+        <div style={styles.loadingOverlay}>Carregando vídeo...</div>
 
-        {/* Debug info para iOS */}
-        {isIOS && (
-          <div style={{
-            position: 'absolute',
-            top: 10,
-            left: 10,
-            background: 'rgba(0,0,0,0.8)',
-            color: 'white',
-            padding: '4px 8px',
-            fontSize: '12px',
-            zIndex: 1000,
-            display: isReady ? 'none' : 'block'
-          }}>
-            iOS: {isPortrait ? 'Portrait' : 'Landscape'} | Mobile: {isMobileish ? 'Yes' : 'No'}
-            <br />
-            <button 
-              onClick={requestFullscreenSafely}
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                border: '1px solid white',
-                color: 'white',
-                padding: '2px 6px',
-                fontSize: '10px',
-                marginTop: '4px'
-              }}
-            >
-              Test Fullscreen
-            </button>
-          </div>
-        )}
-
-        {/* Error Overlay */}
+        {/* Error */}
         <div style={styles.errorOverlay}>
           <div>Erro ao carregar o vídeo</div>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             style={{ padding: "8px 16px", background: "#333", color: "#fff", border: "none", borderRadius: 4 }}
           >
             Tentar novamente
           </button>
         </div>
 
-        {/* Vimeo Player */}
+        {/* Vimeo Iframe */}
         <iframe
-          ref={playerRef}
-          src={`https://player.vimeo.com/video/${vimeoUrl.split('/').pop()}?autopause=1&muted=0&controls=0&title=0&byline=0&portrait=0&dnt=1&transparent=0`}
-          width="100%"
-          height="100%"
-          frameBorder="0"
+          ref={iframeRef}
+          src={`https://player.vimeo.com/video/${vimeoUrl.split('/').pop()}?autopause=1&muted=0&controls=0&title=0&byline=0&portrait=0&dnt=1&transparent=0&playsinline=1`}
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
-          style={{ background: "#000" }}
+          style={styles.iframe(showModal)}
           onLoad={onReady}
           onError={onError}
-          onLoadStart={() => console.log("Iframe load started")}
         />
 
         {/* Overlay: gire o telefone */}
@@ -515,9 +381,7 @@ export default function VideoExperience({
                 src={rotateImageUrl}
                 alt="Gire o telefone"
                 style={{ maxWidth: "100%", height: "auto", display: "block", margin: "0 auto 18px" }}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
+                onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
               />
             ) : (
               <StaticTurnOn />
@@ -525,14 +389,14 @@ export default function VideoExperience({
           </div>
         </div>
 
-        {/* Tap-to-enter (necessário para iOS dar play) */}
+        {/* Tap to enter */}
         <div style={styles.tapToPlay} aria-hidden={!showTapToPlay}>
           <button type="button" style={styles.playBtn} onClick={handleEnterExperience}>
             TAP TO ENTER EXPERIENCE
           </button>
         </div>
 
-        {/* Hotspots invisíveis (RSVP / BOOK) */}
+        {/* Hotspots invisíveis */}
         <div style={styles.ctaSlate} aria-hidden={!ctaShown}>
           <a
             href="https://rhparisevent.com"
@@ -552,7 +416,7 @@ export default function VideoExperience({
           </a>
         </div>
 
-        {/* Modal com VideoActions (Framer Motion) — abre sobre o vídeo dentro do "fullscreen" do container */}
+        {/* Modal dentro do mesmo container (fica por cima do vídeo) */}
         <AnimatePresence>
           {showModal && (
             <motion.div
@@ -572,11 +436,13 @@ export default function VideoExperience({
                 aria-label="Informações"
               >
                 <VideoActions onClose={() => setShowModal(false)} />
-                
-                {/* Botão de fullscreen para iOS */}
+                {/* botão opcional para tentar FS de novo */}
                 {isIOS && (
                   <motion.button
-                    onClick={requestFullscreenSafely}
+                    onClick={async () => {
+                      const ok = await requestContainerFullscreen();
+                      if (!ok) setPseudoFS(true);
+                    }}
                     style={{
                       position: "absolute",
                       bottom: 20,
@@ -592,7 +458,7 @@ export default function VideoExperience({
                     }}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1 }}
+                    transition={{ delay: 0.4 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
