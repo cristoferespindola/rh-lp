@@ -212,7 +212,7 @@ export default function VideoExperience({
     if (videoElement.requestFullscreen) {
       videoElement
         .requestFullscreen()
-        .catch(err => console.log("Fullscreen error:", err));
+        .catch((err: any) => console.log("Fullscreen error:", err));
     } else if (videoElement.mozRequestFullScreen) {
       videoElement.mozRequestFullScreen();
     } else if (videoElement.webkitRequestFullscreen) {
