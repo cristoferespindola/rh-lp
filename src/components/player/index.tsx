@@ -207,14 +207,18 @@ export default function VideoExperience({
       setShowTapToPlay(true);
       return;
     }
+    const videoElement = wrapRef.current as any;
 
-    // **IMPORTANTE:** pedir fullscreen imediatamente dentro do gesto
-    // No iOS: NÃO chamar player.requestFullscreen() (fullscreen nativo do vídeo)
-    const ok = await requestContainerFullscreen();
-
-    if (!ok && isIOS) {
-      // iOS antigo ou bloqueado? usa pseudo-FS
-      enterPseudoFullscreen();
+    if (videoElement.requestFullscreen) {
+      videoElement
+        .requestFullscreen()
+        .catch(err => console.log("Fullscreen error:", err));
+    } else if (videoElement.mozRequestFullScreen) {
+      videoElement.mozRequestFullScreen();
+    } else if (videoElement.webkitRequestFullscreen) {
+      videoElement.webkitRequestFullscreen();
+    } else if (videoElement.webkitEnterFullscreen) {
+      videoElement.webkitEnterFullscreen();
     }
   }, [enterPseudoFullscreen, isIOS, requestContainerFullscreen]);
 
