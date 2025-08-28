@@ -6,9 +6,9 @@ import StaticTurnOn from "@/components/video/StaticTurnOn";
 import VideoActions from "@/components/videoActions";
 
 type Props = {
-  vimeoUrl: string; // ex: https://vimeo.com/1112605590
+  vimeoUrl: string;              // ex: https://vimeo.com/1112605590
   rotateImageUrl?: string;
-  ctaTimeSec?: number; // default 151
+  ctaTimeSec?: number;           // default 151
   autoOpenModalAt?: "cta" | "ended" | null;
 };
 
@@ -22,7 +22,7 @@ export default function VideoExperience({
 }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const vimeoPlayerRef = useRef<any | null>(null); // guarda a instância única do Vimeo.Player
+  const vimeoPlayerRef = useRef<any | null>(null); // instância única do Vimeo.Player
 
   const [isPortrait, setIsPortrait] = useState(false);
   const [isMobileish, setIsMobileish] = useState(false);
@@ -37,10 +37,10 @@ export default function VideoExperience({
   const [ctaShown, setCtaShown] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // pseudo-fullscreen fallback p/ iOS que não suporta requestFullscreen no container
+  // PSEUDO FULLSCREEN (fallback confiável p/ iOS)
   const [pseudoFS, setPseudoFS] = useState(false);
 
-  // --- helpers
+  // helpers -------------------------------------------------------
   const computePortrait = useCallback(
     () => window.matchMedia && window.matchMedia("(orientation: portrait)").matches,
     []
@@ -70,16 +70,26 @@ export default function VideoExperience({
     }
   }, [computePortrait, computeMobileish, hasEntered]);
 
+  // lock scroll quando pseudoFS ativo
+  useEffect(() => {
+    if (pseudoFS) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [pseudoFS]);
+
   useEffect(() => {
     setIsIOS(computeIOS());
     refreshOverlays();
 
     const onResize = () => setTimeout(() => refreshOverlays(), 50);
     const onOrientation = () => setTimeout(() => refreshOverlays(), 300);
+
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onOrientation);
 
-    // monitorar mudanças de fullscreen p/ desativar pseudoFS quando sair
+    // se o usuário sair de fullscreen real, desligar pseudoFS
     const onFSChange = () => {
       const fsEl =
         document.fullscreenElement ||
@@ -98,7 +108,7 @@ export default function VideoExperience({
     };
   }, [computeIOS, refreshOverlays]);
 
-  // --- inicializa 1x o Vimeo.Player e registra listeners
+  // carrega API do Vimeo e instancia 1x --------------------------------
   useEffect(() => {
     let disposed = false;
 
@@ -117,10 +127,8 @@ export default function VideoExperience({
       if (disposed) return;
       if (!iframeRef.current || !(window as any).Vimeo?.Player) return;
 
-      // evita re-instanciar
       if (!vimeoPlayerRef.current) {
         vimeoPlayerRef.current = new (window as any).Vimeo.Player(iframeRef.current);
-
         const player = vimeoPlayerRef.current as any;
 
         player.on("loaded", () => {
@@ -132,18 +140,13 @@ export default function VideoExperience({
         player.on("timeupdate", (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= ctaTimeSec) {
             setCtaShown(true);
-            if (autoOpenModalAt === "cta") {
-              // **NÃO** sair de fullscreen aqui; queremos modal **por cima** do container
-              setShowModal(true);
-            }
+            if (autoOpenModalAt === "cta") setShowModal(true);
           }
         });
 
         player.on("ended", () => {
           if (!ctaShown) setCtaShown(true);
-          if (autoOpenModalAt === "ended") {
-            setShowModal(true);
-          }
+          if (autoOpenModalAt === "ended") setShowModal(true);
         });
 
         player.on("error", () => {
@@ -167,60 +170,52 @@ export default function VideoExperience({
     };
   }, [ctaShown, ctaTimeSec, autoOpenModalAt, refreshOverlays]);
 
-  // --- fullscreen do container (SEM timeout; precisa do gesto)
-  const requestContainerFullscreen = useCallback(async () => {
-    const el = wrapRef.current;
-    if (!el) return false;
+  // fullscreen real (container -> html) no MESMO gesto -------------------
+  const requestAnyFullscreen = useCallback(async () => {
+    const tryFs = async (target: Element | Document) => {
+      // @ts-ignore
+      if (target.requestFullscreen) return await (target as any).requestFullscreen();
+      // @ts-ignore
+      if (target.webkitRequestFullscreen) return await (target as any).webkitRequestFullscreen();
+      // @ts-ignore
+      if (target.msRequestFullscreen) return await (target as any).msRequestFullscreen();
+      throw new Error("FS not supported");
+    };
+
     try {
-      if (el.requestFullscreen) {
-        await el.requestFullscreen();
-        return true;
-      }
-      const wEl = el as any;
-      if (wEl.webkitRequestFullscreen) {
-        await wEl.webkitRequestFullscreen();
-        return true;
-      }
-      if (wEl.msRequestFullscreen) {
-        await wEl.msRequestFullscreen();
+      if (wrapRef.current) {
+        await tryFs(wrapRef.current);
         return true;
       }
     } catch {}
+
+    try {
+      await tryFs(document.documentElement);
+      return true;
+    } catch {}
+
     return false;
   }, []);
 
-  // --- fallback pseudo-fullscreen (CSS)
-  const enterPseudoFullscreen = useCallback(() => {
-    setPseudoFS(true);
-  }, []);
-
-  // --- handler do “enter experience”
+  // handler de entrada (tap) ---------------------------------------------
   const handleEnterExperience = useCallback(async () => {
     setHasEntered(true);
     setShowTapToPlay(false);
 
-    const player = vimeoPlayerRef.current;
-    try {
-      await player?.play();
-    } catch (e) {
-      // alguns iOS exigem toque extra; manter o botão visível se falhar
-      setShowTapToPlay(true);
-      return;
-    }
-    const videoElement = wrapRef.current as any;
+    // pedir fullscreen real no MESMO gesto (sem timeout)
+    const fsOk = await requestAnyFullscreen();
+    if (!fsOk) setPseudoFS(true);           // fallback p/ iOS
 
-    if (videoElement.requestFullscreen) {
-      videoElement
-        .requestFullscreen()
-        .catch((err: any) => console.log("Fullscreen error:", err));
-    } else if (videoElement.mozRequestFullScreen) {
-      videoElement.mozRequestFullScreen();
-    } else if (videoElement.webkitRequestFullscreen) {
-      videoElement.webkitRequestFullscreen();
-    } else if (videoElement.webkitEnterFullscreen) {
-      videoElement.webkitEnterFullscreen();
+    // esconde ao máximo a UI do Safari
+    window.scrollTo(0, 1);
+
+    // tocar vídeo
+    try {
+      await vimeoPlayerRef.current?.play();
+    } catch {
+      setShowTapToPlay(true);               // se falhar autoplay, mantém botão
     }
-  }, [enterPseudoFullscreen, isIOS, requestContainerFullscreen]);
+  }, [requestAnyFullscreen]);
 
   const onReady = useCallback(() => {
     setIsReady(true);
@@ -234,7 +229,7 @@ export default function VideoExperience({
     setIsReady(false);
   }, []);
 
-  // estilos
+  // estilos ---------------------------------------------------------------
   const styles = useMemo(
     () => ({
       app: {
@@ -250,16 +245,20 @@ export default function VideoExperience({
         display: "grid",
         placeItems: "center",
         background: "#000",
-        // cria stacking context p/ modal ficar acima
         zIndex: 0,
+        // safe areas (iPhone com notch) – só afeta pseudoFS
+        padding:
+          pseudoFS
+            ? "env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)"
+            : undefined,
       },
       iframe: (modalOpen: boolean) => ({
         width: "100%",
         height: "100%",
         border: 0,
         position: "relative" as const,
-        zIndex: 1, // vídeo abaixo da modal
-        pointerEvents: modalOpen ? ("none" as const) : ("auto" as const), // quando modal abrir, desabilita o iframe
+        zIndex: 1,
+        pointerEvents: modalOpen ? ("none" as const) : ("auto" as const),
         background: "#000",
       }),
       rotateOverlay: {
@@ -314,7 +313,7 @@ export default function VideoExperience({
       modalBackdrop: {
         position: "absolute" as const,
         inset: 0,
-        zIndex: 5, // acima do iframe e hotspots
+        zIndex: 5,
         display: "grid",
         placeItems: "center",
         pointerEvents: "auto" as const,
@@ -347,11 +346,7 @@ export default function VideoExperience({
 
   return (
     <div style={styles.app}>
-      <div
-        ref={wrapRef}
-        style={styles.wrap}
-        id="video-wrap"
-      >
+      <div ref={wrapRef} style={styles.wrap} id="video-wrap">
         {/* Loading */}
         <div style={styles.loadingOverlay}>Carregando vídeo...</div>
 
@@ -377,7 +372,7 @@ export default function VideoExperience({
           onError={onError}
         />
 
-        {/* Overlay: gire o telefone */}
+        {/* Overlay: gire o telefone (mostra em portrait) */}
         <div style={styles.rotateOverlay} aria-hidden={!showRotateOverlay}>
           <div style={{ maxWidth: 720, width: "100%" }}>
             {rotateImageUrl ? (
@@ -390,10 +385,13 @@ export default function VideoExperience({
             ) : (
               <StaticTurnOn />
             )}
+            <div style={{ marginTop: 12, opacity: 0.8, fontSize: "clamp(14px,2.5vw,18px)" }}>
+              Rotacione seu aparelho para Paisagem.
+            </div>
           </div>
         </div>
 
-        {/* Tap to enter */}
+        {/* Tap to enter (mostra em landscape, mobile) */}
         <div style={styles.tapToPlay} aria-hidden={!showTapToPlay}>
           <button type="button" style={styles.playBtn} onClick={handleEnterExperience}>
             TAP TO ENTER EXPERIENCE
@@ -420,7 +418,7 @@ export default function VideoExperience({
           </a>
         </div>
 
-        {/* Modal dentro do mesmo container (fica por cima do vídeo) */}
+        {/* Modal por cima do vídeo */}
         <AnimatePresence>
           {showModal && (
             <motion.div
@@ -440,35 +438,35 @@ export default function VideoExperience({
                 aria-label="Informações"
               >
                 <VideoActions onClose={() => setShowModal(false)} />
-                {/* botão opcional para tentar FS de novo */}
-                {isIOS && (
-                  <motion.button
-                    onClick={async () => {
-                      const ok = await requestContainerFullscreen();
-                      if (!ok) setPseudoFS(true);
-                    }}
-                    style={{
-                      position: "absolute",
-                      bottom: 20,
-                      right: 20,
-                      background: "rgba(255,255,255,0.2)",
-                      border: "1px solid rgba(255,255,255,0.3)",
-                      color: "#fff",
-                      padding: "8px 12px",
-                      borderRadius: 6,
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      zIndex: 10000,
-                    }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Fullscreen
-                  </motion.button>
-                )}
+
+                {/* Botão para tentar fullscreen real novamente; se negar, mantém pseudoFS */}
+                <motion.button
+                  onClick={async () => {
+                    const ok = await requestAnyFullscreen();
+                    if (!ok) setPseudoFS(true);
+                    window.scrollTo(0, 1);
+                  }}
+                  style={{
+                    position: "absolute",
+                    bottom: 20,
+                    right: 20,
+                    background: "rgba(255,255,255,0.2)",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    color: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    zIndex: 10000,
+                  }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Fullscreen
+                </motion.button>
               </motion.div>
             </motion.div>
           )}
