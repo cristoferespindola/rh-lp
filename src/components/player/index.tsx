@@ -7,9 +7,9 @@ import VideoActions from "@/components/videoActions";
 
 type Props = {
   vimeoUrl: string;              // ex: https://vimeo.com/1112605590
-  rotateImageUrl?: string;
-  ctaTimeSec?: number;           // default 151
-  autoOpenModalAt?: "cta" | "ended" | null;
+  rotateImageUrl?: string;       // imagem para o aviso "gire"
+  ctaTimeSec?: number;           // ponto-alvo (default 151s)
+  autoOpenModalAt?: "cta" | "ended" | null; // quando abrir a modal (default "cta")
 };
 
 const MOBILE_MAX_WIDTH = 1024;
@@ -37,10 +37,7 @@ export default function VideoExperience({
   const [ctaShown, setCtaShown] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // PSEUDO FULLSCREEN (fallback confiável p/ iOS)
-  const [pseudoFS, setPseudoFS] = useState(false);
-
-  // helpers -------------------------------------------------------
+  // ----------------- helpers de ambiente/orientação -----------------
   const computePortrait = useCallback(
     () => window.matchMedia && window.matchMedia("(orientation: portrait)").matches,
     []
@@ -70,45 +67,22 @@ export default function VideoExperience({
     }
   }, [computePortrait, computeMobileish, hasEntered]);
 
-  // lock scroll quando pseudoFS ativo
-  useEffect(() => {
-    if (pseudoFS) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
-    }
-  }, [pseudoFS]);
-
   useEffect(() => {
     setIsIOS(computeIOS());
     refreshOverlays();
 
     const onResize = () => setTimeout(() => refreshOverlays(), 50);
     const onOrientation = () => setTimeout(() => refreshOverlays(), 300);
-
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onOrientation);
-
-    // se o usuário sair de fullscreen real, desligar pseudoFS
-    const onFSChange = () => {
-      const fsEl =
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).msFullscreenElement;
-      if (!fsEl) setPseudoFS(false);
-    };
-    document.addEventListener("fullscreenchange", onFSChange as any);
-    document.addEventListener("webkitfullscreenchange", onFSChange as any);
 
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onOrientation);
-      document.removeEventListener("fullscreenchange", onFSChange as any);
-      document.removeEventListener("webkitfullscreenchange", onFSChange as any);
     };
   }, [computeIOS, refreshOverlays]);
 
-  // carrega API do Vimeo e instancia 1x --------------------------------
+  // ----------------- carregar API do Vimeo e instanciar 1x -----------------
   useEffect(() => {
     let disposed = false;
 
@@ -137,16 +111,26 @@ export default function VideoExperience({
           refreshOverlays();
         });
 
-        player.on("timeupdate", (data: { seconds: number }) => {
+        // tempo-alvo: pausar → sair do FS → abrir modal
+        player.on("timeupdate", async (data: { seconds: number }) => {
           if (!ctaShown && data.seconds >= ctaTimeSec) {
             setCtaShown(true);
-            if (autoOpenModalAt === "cta") setShowModal(true);
+            try { await player.pause(); } catch {}
+            await exitAnyFullscreen();
+            if (autoOpenModalAt === "cta" || autoOpenModalAt === "ended") {
+              setShowModal(true);
+            }
           }
         });
 
-        player.on("ended", () => {
+        // no fim: mesma coisa
+        player.on("ended", async () => {
           if (!ctaShown) setCtaShown(true);
-          if (autoOpenModalAt === "ended") setShowModal(true);
+          try { await player.pause(); } catch {}
+          await exitAnyFullscreen();
+          if (autoOpenModalAt === "ended" || autoOpenModalAt === "cta") {
+            setShowModal(true);
+          }
         });
 
         player.on("error", () => {
@@ -170,8 +154,38 @@ export default function VideoExperience({
     };
   }, [ctaShown, ctaTimeSec, autoOpenModalAt, refreshOverlays]);
 
-  // fullscreen real (container -> html) no MESMO gesto -------------------
-  const requestAnyFullscreen = useCallback(async () => {
+  // ----------------- fullscreen helpers (player + documento) -----------------
+  const requestVideoFullscreen = useCallback(async () => {
+    const p = vimeoPlayerRef.current as any;
+    if (!p) return false;
+    try {
+      if (p.requestFullscreen) {
+        await p.requestFullscreen(); // fullscreen nativo do player (vídeo)
+        return true;
+      }
+    } catch (e) {
+      console.warn("player.requestFullscreen falhou:", e);
+    }
+    return false;
+  }, []);
+
+  const exitAnyFullscreen = useCallback(async () => {
+    const p = vimeoPlayerRef.current as any;
+    try {
+      if (p?.exitFullscreen) {
+        await p.exitFullscreen(); // sai do FS do player, se ativo
+      }
+    } catch (e) {
+      console.warn("player.exitFullscreen falhou:", e);
+    }
+
+    const d: any = document;
+    try { if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen(); } catch {}
+    try { if (d.webkitFullscreenElement && d.webkitExitFullscreen) await d.webkitExitFullscreen(); } catch {}
+  }, []);
+
+  // fallback opcional: tentar fullscreen do container/html
+  const requestAnyDocFullscreen = useCallback(async () => {
     const tryFs = async (target: Element | Document) => {
       // @ts-ignore
       if (target.requestFullscreen) return await (target as any).requestFullscreen();
@@ -181,41 +195,41 @@ export default function VideoExperience({
       if (target.msRequestFullscreen) return await (target as any).msRequestFullscreen();
       throw new Error("FS not supported");
     };
-
     try {
       if (wrapRef.current) {
         await tryFs(wrapRef.current);
         return true;
       }
     } catch {}
-
     try {
       await tryFs(document.documentElement);
       return true;
     } catch {}
-
     return false;
   }, []);
 
-  // handler de entrada (tap) ---------------------------------------------
+  // ----------------- handler de entrada (tap) -----------------
   const handleEnterExperience = useCallback(async () => {
     setHasEntered(true);
     setShowTapToPlay(false);
 
-    // pedir fullscreen real no MESMO gesto (sem timeout)
-    const fsOk = await requestAnyFullscreen();
-    if (!fsOk) setPseudoFS(true);           // fallback p/ iOS
-
-    // esconde ao máximo a UI do Safari
-    window.scrollTo(0, 1);
+    // pedir fullscreen do VÍDEO no MESMO gesto
+    const fsOk = await requestVideoFullscreen();
 
     // tocar vídeo
     try {
       await vimeoPlayerRef.current?.play();
-    } catch {
-      setShowTapToPlay(true);               // se falhar autoplay, mantém botão
+    } catch (e) {
+      console.warn("play() falhou", e);
+      setShowTapToPlay(true);
+      return;
     }
-  }, [requestAnyFullscreen]);
+
+    // se o FS do player não rolou, tenta o do container/html (opcional)
+    if (!fsOk) {
+      try { await requestAnyDocFullscreen(); } catch {}
+    }
+  }, [requestVideoFullscreen, requestAnyDocFullscreen]);
 
   const onReady = useCallback(() => {
     setIsReady(true);
@@ -229,7 +243,7 @@ export default function VideoExperience({
     setIsReady(false);
   }, []);
 
-  // estilos ---------------------------------------------------------------
+  // ----------------- estilos -----------------
   const styles = useMemo(
     () => ({
       app: {
@@ -240,27 +254,21 @@ export default function VideoExperience({
         overflow: "hidden",
       },
       wrap: {
-        position: pseudoFS ? ("fixed" as const) : ("absolute" as const),
+        position: "absolute" as const,
         inset: 0,
         display: "grid",
         placeItems: "center",
         background: "#000",
         zIndex: 0,
-        // safe areas (iPhone com notch) – só afeta pseudoFS
-        padding:
-          pseudoFS
-            ? "env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)"
-            : undefined,
       },
-      iframe: (modalOpen: boolean) => ({
+      iframe: {
         width: "100%",
         height: "100%",
         border: 0,
         position: "relative" as const,
         zIndex: 1,
-        pointerEvents: modalOpen ? ("none" as const) : ("auto" as const),
         background: "#000",
-      }),
+      },
       rotateOverlay: {
         position: "absolute" as const,
         inset: 0,
@@ -341,7 +349,7 @@ export default function VideoExperience({
         gap: 16,
       },
     }),
-    [showRotateOverlay, showTapToPlay, ctaShown, isReady, hasError, pseudoFS]
+    [showRotateOverlay, showTapToPlay, ctaShown, isReady, hasError]
   );
 
   return (
@@ -367,7 +375,7 @@ export default function VideoExperience({
           src={`https://player.vimeo.com/video/${vimeoUrl.split('/').pop()}?autopause=1&muted=0&controls=0&title=0&byline=0&portrait=0&dnt=1&transparent=0&playsinline=1`}
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
-          style={styles.iframe(showModal)}
+          style={styles.iframe}
           onLoad={onReady}
           onError={onError}
         />
@@ -398,7 +406,7 @@ export default function VideoExperience({
           </button>
         </div>
 
-        {/* Hotspots invisíveis */}
+        {/* Hotspots invisíveis (se ainda quiser) */}
         <div style={styles.ctaSlate} aria-hidden={!ctaShown}>
           <a
             href="https://rhparisevent.com"
@@ -418,7 +426,7 @@ export default function VideoExperience({
           </a>
         </div>
 
-        {/* Modal por cima do vídeo */}
+        {/* Modal por cima do vídeo (após sair do fullscreen) */}
         <AnimatePresence>
           {showModal && (
             <motion.div
@@ -438,35 +446,6 @@ export default function VideoExperience({
                 aria-label="Informações"
               >
                 <VideoActions onClose={() => setShowModal(false)} />
-
-                {/* Botão para tentar fullscreen real novamente; se negar, mantém pseudoFS */}
-                <motion.button
-                  onClick={async () => {
-                    const ok = await requestAnyFullscreen();
-                    if (!ok) setPseudoFS(true);
-                    window.scrollTo(0, 1);
-                  }}
-                  style={{
-                    position: "absolute",
-                    bottom: 20,
-                    right: 20,
-                    background: "rgba(255,255,255,0.2)",
-                    border: "1px solid rgba(255,255,255,0.3)",
-                    color: "#fff",
-                    padding: "8px 12px",
-                    borderRadius: 6,
-                    fontSize: "12px",
-                    cursor: "pointer",
-                    zIndex: 10000,
-                  }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Fullscreen
-                </motion.button>
               </motion.div>
             </motion.div>
           )}
